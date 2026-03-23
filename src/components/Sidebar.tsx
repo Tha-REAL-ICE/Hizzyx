@@ -1,8 +1,8 @@
 import React from 'react';
-import { LayoutDashboard, Radio, PenLine, Folder, Search, Zap, LogOut } from 'lucide-react';
+import { LayoutDashboard, Radio, PenLine, Folder, Search, Zap, Bot, LogOut } from 'lucide-react';
 import { cn } from '../lib/utils';
 
-export type PageId = 'dashboard' | 'signals' | 'log' | 'history' | 'analytics' | 'rules';
+export type PageId = 'dashboard' | 'signals' | 'log' | 'history' | 'analytics' | 'rules' | 'analyst';
 
 interface SidebarProps {
   activePage: PageId;
@@ -16,6 +16,7 @@ export default function Sidebar({ activePage, onPageChange, isOpen, onClose, has
   const navItems: { id: PageId; label: string; icon: React.ReactNode }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={15} /> },
     { id: 'signals', label: 'HIZZYX Signals', icon: <Radio size={15} /> },
+    { id: 'analyst', label: 'HizzyX Core', icon: <Bot size={15} /> },
     { id: 'log', label: 'Log Trade', icon: <PenLine size={15} /> },
     { id: 'history', label: 'History', icon: <Folder size={15} /> },
     { id: 'analytics', label: 'Analytics', icon: <Search size={15} /> },

@@ -70,19 +70,22 @@ export default function Dashboard({ trades, onUpdate }: { trades: Trade[], onUpd
           backgroundColor: 'rgba(200,255,0,0.1)',
           borderWidth: 2,
           fill: true,
-          tension: 0.4,
-          pointRadius: 3,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          stepped: true
         },
         {
           label: 'Per Trade',
           data: per,
           borderColor: '#ff3d3d',
-          backgroundColor: 'rgba(255,61,61,0.05)',
-          borderWidth: 1.5,
-          fill: true,
-          tension: 0.4,
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          fill: false,
+          tension: 0,
           pointRadius: 2,
-          borderDash: [4, 3],
+          pointBackgroundColor: '#ff3d3d',
+          borderDash: [2, 2],
         }
       ]
     };
@@ -95,61 +98,57 @@ export default function Dashboard({ trades, onUpdate }: { trades: Trade[], onUpd
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: '#161616',
-        borderColor: '#222',
+        backgroundColor: '#000',
+        borderColor: '#ff3d3d',
         borderWidth: 1,
-        titleColor: '#777',
-        bodyColor: '#ececec',
+        titleColor: '#fff',
+        bodyColor: '#c8ff00',
         titleFont: { family: 'JetBrains Mono', size: 10 },
-        bodyFont: { family: 'JetBrains Mono', size: 11 }
+        bodyFont: { family: 'JetBrains Mono', size: 12, weight: 'bold' as const },
+        padding: 12,
+        cornerRadius: 0
       }
     },
     scales: {
       x: {
-        grid: { color: 'rgba(255,255,255,0.02)' },
-        border: { display: false },
-        ticks: { color: '#444', font: { family: 'JetBrains Mono', size: 8 }, maxRotation: 0, maxTicksLimit: 8 },
+        grid: { color: '#222', drawBorder: false },
+        ticks: { color: '#777', font: { family: 'JetBrains Mono', size: 9 }, maxRotation: 0, maxTicksLimit: 8 },
       },
       y: {
-        grid: { color: 'rgba(255,255,255,0.03)' },
-        border: { display: false },
-        ticks: { color: '#444', font: { family: 'JetBrains Mono', size: 8 } },
+        grid: { color: '#222', drawBorder: false },
+        ticks: { color: '#777', font: { family: 'JetBrains Mono', size: 9 } },
       }
     }
   };
 
-  const latestSignals = useMemo(() => {
-    return trades.filter(t => t.status === 'OPEN').slice(0, 3);
-  }, [trades]);
-
   return (
     <div className="flex flex-col gap-8">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-s1 border border-border rounded-sm p-6 relative overflow-hidden group shadow-lg hover:shadow-red/5 transition-all">
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-red/40 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
-          <div className="font-mono text-[9px] uppercase tracking-[0.4em] text-muted mb-3 font-bold">Total Operations</div>
-          <div className="font-display text-[36px] font-bold text-text leading-none tracking-tighter drop-shadow-sm">{stats.total}</div>
+        <div className="bg-black border-2 border-border2 p-6 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-full h-1 bg-red scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted mb-2 font-bold">Total Ops</div>
+          <div className="font-display text-[48px] font-black text-text leading-none tracking-tighter">{stats.total}</div>
         </div>
-        <div className="bg-s1 border border-border rounded-sm p-6 relative overflow-hidden group shadow-lg hover:shadow-lime/5 transition-all">
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-lime/40 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
-          <div className="font-mono text-[9px] uppercase tracking-[0.4em] text-muted mb-3 font-bold">Success Rate</div>
-          <div className="font-display text-[36px] font-bold text-lime leading-none tracking-tighter drop-shadow-sm">{stats.wr}%</div>
+        <div className="bg-black border-2 border-border2 p-6 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-full h-1 bg-lime scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted mb-2 font-bold">Win Rate</div>
+          <div className="font-display text-[48px] font-black text-lime leading-none tracking-tighter">{stats.wr}%</div>
         </div>
-        <div className="bg-s1 border border-border rounded-sm p-6 relative overflow-hidden group shadow-lg hover:shadow-gold/5 transition-all">
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-gold/40 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
-          <div className="font-mono text-[9px] uppercase tracking-[0.4em] text-muted mb-3 font-bold">Current Streak</div>
+        <div className="bg-black border-2 border-border2 p-6 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gold scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted mb-2 font-bold">Streak</div>
           <div className={cn(
-            "font-display text-[36px] font-bold leading-none tracking-tighter drop-shadow-sm",
+            "font-display text-[48px] font-black leading-none tracking-tighter",
             stats.streakType === 'WIN' ? 'text-lime' : stats.streakType === 'LOSS' ? 'text-red' : 'text-text'
           )}>
-            {stats.streak}<span className="text-[18px] ml-1">{stats.streakType === 'WIN' ? 'W' : stats.streakType === 'LOSS' ? 'L' : ''}</span>
+            {stats.streak}<span className="text-[20px] ml-1">{stats.streakType === 'WIN' ? 'W' : stats.streakType === 'LOSS' ? 'L' : ''}</span>
           </div>
         </div>
-        <div className="bg-s1 border border-border rounded-sm p-6 relative overflow-hidden group shadow-lg hover:shadow-blue/5 transition-all">
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-blue/40 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
-          <div className="font-mono text-[9px] uppercase tracking-[0.4em] text-muted mb-3 font-bold">Frequency (7D)</div>
-          <div className="font-display text-[36px] font-bold text-blue leading-none tracking-tighter drop-shadow-sm">
-            {stats.frequency} <span className="text-[12px] font-mono text-muted uppercase tracking-widest align-middle">T/D</span>
+        <div className="bg-black border-2 border-border2 p-6 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-full h-1 bg-blue scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted mb-2 font-bold">Freq (7D)</div>
+          <div className="font-display text-[48px] font-black text-blue leading-none tracking-tighter">
+            {stats.frequency} <span className="text-[14px] font-mono text-muted uppercase tracking-widest align-middle">T/D</span>
           </div>
         </div>
       </div>
@@ -157,17 +156,17 @@ export default function Dashboard({ trades, onUpdate }: { trades: Trade[], onUpd
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 space-y-8">
           {stats.openPositions.length > 0 && (
-            <div className="space-y-4 relative group/live">
-              <div className="absolute -top-4 -left-4 w-12 h-12 border-t-2 border-l-2 border-lime/20 group-hover/live:border-lime/40 transition-all"></div>
-              <div className="absolute -bottom-4 -right-4 w-12 h-12 border-b-2 border-r-2 border-lime/20 group-hover/live:border-lime/40 transition-all"></div>
+            <div className="space-y-4 border-2 border-lime/30 p-6 bg-lime/5 relative">
+              <div className="absolute -top-2 -left-2 w-4 h-4 border-t-2 border-l-2 border-lime"></div>
+              <div className="absolute -bottom-2 -right-2 w-4 h-4 border-b-2 border-r-2 border-lime"></div>
               
-              <div className="flex items-center justify-between px-2">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-lime rounded-full animate-pulse shadow-[0_0_10px_rgba(163,230,53,0.5)]"></div>
-                  <span className="font-mono text-[11px] uppercase tracking-[0.5em] text-lime font-bold">Live Executions</span>
+                  <div className="w-3 h-3 bg-lime animate-pulse"></div>
+                  <span className="font-display text-[24px] uppercase tracking-wider text-lime leading-none">Live Executions</span>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1 bg-lime/10 border border-lime/30 rounded-sm">
-                  <span className="font-mono text-[9px] text-lime font-bold tracking-widest uppercase">Active: {stats.openPositions.length}</span>
+                <div className="px-3 py-1 bg-lime text-black font-mono text-[10px] font-bold tracking-widest uppercase">
+                  Active: {stats.openPositions.length}
                 </div>
               </div>
               <div className="flex flex-col gap-3">
@@ -178,78 +177,78 @@ export default function Dashboard({ trades, onUpdate }: { trades: Trade[], onUpd
             </div>
           )}
 
-          <div className="bg-s1 border border-border rounded-sm p-6">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-black border-2 border-border2 p-6">
+            <div className="flex items-center justify-between mb-8 border-b-2 border-border2 pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-1.5 h-1.5 bg-red rounded-full animate-pulse"></div>
-                <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-sub">Equity Performance Matrix</span>
+                <div className="w-2 h-2 bg-red animate-pulse"></div>
+                <span className="font-display text-[20px] uppercase tracking-wider text-text leading-none">Equity Matrix</span>
               </div>
-              <div className="flex gap-4">
-                <div className="flex items-center gap-1.5 font-mono text-[8px] text-muted uppercase">
-                  <div className="w-1.5 h-1.5 rounded-full bg-lime"></div>
+              <div className="flex gap-6">
+                <div className="flex items-center gap-2 font-mono text-[10px] text-text uppercase font-bold">
+                  <div className="w-3 h-3 bg-lime"></div>
                   <span>Cumulative</span>
                 </div>
-                <div className="flex items-center gap-1.5 font-mono text-[8px] text-muted uppercase">
-                  <div className="w-1.5 h-1.5 rounded-full bg-red"></div>
+                <div className="flex items-center gap-2 font-mono text-[10px] text-text uppercase font-bold">
+                  <div className="w-3 h-3 bg-red"></div>
                   <span>Per Trade</span>
                 </div>
               </div>
             </div>
-            <div className="relative h-[280px]">
+            <div className="relative h-[320px]">
               {chartData ? (
                 <Line data={chartData} options={chartOptions} />
               ) : (
-                <div className="flex items-center justify-center h-full font-mono text-[10px] text-muted uppercase tracking-widest">Awaiting Data Streams...</div>
+                <div className="flex items-center justify-center h-full font-mono text-[12px] text-red uppercase tracking-widest blink">Awaiting Data Streams...</div>
               )}
             </div>
           </div>
 
           <div>
-            <div className="flex items-center gap-3 mb-6">
-              <span className="font-mono text-[9px] text-muted uppercase tracking-[0.4em] whitespace-nowrap">Recent Activity Log</span>
-              <div className="flex-1 h-[1px] bg-border/50"></div>
+            <div className="flex items-center gap-4 mb-6">
+              <span className="font-display text-[20px] text-text uppercase tracking-wider leading-none">Recent Log</span>
+              <div className="flex-1 h-[2px] bg-border2"></div>
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               {trades.slice(0, 5).map(t => (
                 <TradeRow key={t.id} trade={t} onUpdate={onUpdate} />
               ))}
-              {!trades.length && <div className="text-center py-12 font-mono text-[10px] text-muted uppercase tracking-widest">No activity recorded.</div>}
+              {!trades.length && <div className="text-center py-16 border-2 border-dashed border-border2 font-mono text-[12px] text-red uppercase tracking-widest blink">No activity recorded.</div>}
             </div>
           </div>
         </div>
 
         <div className="lg:col-span-4 space-y-8">
-          <div className="bg-s1 border border-border border-l-2 border-l-red rounded-sm p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none">
-              <Shield size={120} />
+          <div className="bg-black border-2 border-border2 border-l-4 border-l-red p-6 relative">
+            <div className="absolute top-0 right-0 p-4 opacity-[0.05] pointer-events-none">
+              <Shield size={160} />
             </div>
-            <div className="space-y-6">
+            <div className="space-y-8 relative z-10">
               <div>
-                <div className="font-mono text-[9px] text-red uppercase tracking-[0.3em] mb-4 font-bold">Risk Protocols</div>
-                <div className="flex flex-col gap-2">
+                <div className="font-display text-[24px] text-red uppercase tracking-wider mb-4 leading-none">Risk Protocols</div>
+                <div className="flex flex-col gap-3">
                   {['Over leveraging', 'Entry without confirmation', 'FOMO', 'Greed-driven exits'].map(item => (
-                    <div key={item} className="font-mono text-[10px] text-sub leading-relaxed flex items-center gap-3 group">
-                      <div className="w-1 h-1 bg-red/40 group-hover:bg-red transition-colors"></div>
+                    <div key={item} className="font-mono text-[11px] text-text uppercase tracking-wider flex items-center gap-3 group">
+                      <div className="w-2 h-2 bg-red/40 group-hover:bg-red transition-colors"></div>
                       {item}
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="pt-6 border-t border-border/50">
-                <div className="font-mono text-[9px] text-red uppercase tracking-[0.3em] mb-4 font-bold">Core Framework</div>
-                <div className="flex flex-col gap-2">
+              <div className="pt-8 border-t-2 border-border2">
+                <div className="font-display text-[24px] text-lime uppercase tracking-wider mb-4 leading-none">Core Framework</div>
+                <div className="flex flex-col gap-3">
                   {['Neural Confirmation', 'Risk/Reward Ratio', 'Session Timing', 'Emotional Audit'].map(item => (
-                    <div key={item} className="font-mono text-[10px] text-sub leading-relaxed flex items-center gap-3 group">
-                      <div className="w-1 h-1 bg-lime/40 group-hover:bg-lime transition-colors"></div>
+                    <div key={item} className="font-mono text-[11px] text-text uppercase tracking-wider flex items-center gap-3 group">
+                      <div className="w-2 h-2 bg-lime/40 group-hover:bg-lime transition-colors"></div>
                       {item}
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-            <div className="mt-8 pt-6 border-t border-border/50">
-              <div className="font-display text-[24px] text-text tracking-tight leading-none mb-2 italic">Execution over profits.</div>
-              <p className="font-mono text-[10px] text-muted leading-relaxed uppercase tracking-wider">Discipline is the only edge that matters.</p>
+            <div className="mt-10 pt-8 border-t-2 border-border2">
+              <div className="font-display text-[32px] text-text tracking-tighter leading-none mb-3 uppercase">Execution over profits.</div>
+              <p className="font-mono text-[11px] text-red leading-relaxed uppercase tracking-[0.2em]">Discipline is the only edge that matters.</p>
             </div>
           </div>
         </div>

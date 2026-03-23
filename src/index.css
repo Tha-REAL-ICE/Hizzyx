@@ -105,6 +105,30 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes slideUp {
+  0% { transform: translateY(100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes thrillerBlink {
+  0% { opacity: 1; text-shadow: 0 0 15px rgba(255,0,0,0.8); }
+  2% { opacity: 0.1; text-shadow: none; }
+  3% { opacity: 1; text-shadow: 0 0 15px rgba(255,0,0,0.8); }
+  4% { opacity: 0.1; text-shadow: none; }
+  6% { opacity: 1; text-shadow: 0 0 15px rgba(255,0,0,0.8); }
+  45% { opacity: 1; text-shadow: 0 0 15px rgba(255,0,0,0.8); }
+  46% { opacity: 0.2; text-shadow: none; }
+  47% { opacity: 1; text-shadow: 0 0 15px rgba(255,0,0,0.8); }
+  75% { opacity: 1; text-shadow: 0 0 15px rgba(255,0,0,0.8); }
+  76% { opacity: 0; text-shadow: none; }
+  78% { opacity: 1; text-shadow: 0 0 15px rgba(255,0,0,0.8); }
+  100% { opacity: 1; text-shadow: 0 0 15px rgba(255,0,0,0.8); }
+}
+
+.animate-thriller {
+  animation: thrillerBlink 3.5s infinite;
+}
+
 .blink {
   animation: blink 0.7s step-end infinite;
 }

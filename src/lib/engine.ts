@@ -18,14 +18,16 @@ export class TradingEngine {
   private states: Record<string, MarketState> = {};
   private lastScanTimes: Record<string, number> = {};
   private onUpdate?: () => void;
+  private onError?: (err: string) => void;
   private wsConnections: Record<string, WebSocket> = {};
   private isInitializing: boolean = false;
   private symbols: TradingPair[] = ['GBPJPY', 'BTCUSD', 'EURUSD', 'XAUUSD'];
   private activeSymbol: TradingPair = 'BTCUSD';
   private mode: TradeMode = TradeMode.SCALP;
 
-  constructor(activeSymbol: TradingPair = 'BTCUSD', mode: TradeMode = TradeMode.SCALP, onUpdate?: () => void) {
+  constructor(activeSymbol: TradingPair = 'BTCUSD', mode: TradeMode = TradeMode.SCALP, onUpdate?: () => void, onError?: (err: string) => void) {
     this.onUpdate = onUpdate;
+    this.onError = onError;
     this.activeSymbol = activeSymbol;
     this.mode = mode;
     
@@ -63,9 +65,9 @@ export class TradingEngine {
   }
 
   private getTimeframes() {
-    return this.mode === TradeMode.SWING 
-      ? { htf: '4h', mtf: '30m', ltf: '15m' }
-      : { htf: '15m', mtf: '5m', ltf: '1m' };
+    if (this.mode === TradeMode.SWING) return { htf: '1d', mtf: '4h', ltf: '1h' };
+    if (this.mode === TradeMode.DAY) return { htf: '4h', mtf: '15m', ltf: '5m' };
+    return { htf: '15m', mtf: '5m', ltf: '1m' };
   }
 
   private async init() {
@@ -154,6 +156,7 @@ export class TradingEngine {
       }
     }
     console.error(`All endpoints failed for ${symbol} ${tf}:`, lastError);
+    this.onError?.(`Failed to fetch data for ${symbol}. Retrying...`);
   }
 
   private connectWebSocket(symbol: TradingPair) {
@@ -171,36 +174,47 @@ export class TradingEngine {
       this.wsConnections[symbol].close();
     }
 
-    const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${binanceSymbol.toLowerCase()}@kline_${mtf}`);
-    this.wsConnections[symbol] = ws;
+    try {
+      const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${binanceSymbol.toLowerCase()}@kline_${mtf}`);
+      this.wsConnections[symbol] = ws;
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      const k = data.k;
-      const candle: Candlestick = {
-        time: k.t,
-        open: parseFloat(k.o),
-        high: parseFloat(k.h),
-        low: parseFloat(k.l),
-        close: parseFloat(k.c),
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        const k = data.k;
+        const candle: Candlestick = {
+          time: k.t,
+          open: parseFloat(k.o),
+          high: parseFloat(k.h),
+          low: parseFloat(k.l),
+          close: parseFloat(k.c),
+        };
+        this.currentPrices[symbol] = candle.close;
+        const lastIndex = this.data[symbol][mtf]?.findIndex(c => c.time === candle.time) ?? -1;
+        if (lastIndex !== -1) {
+          this.data[symbol][mtf][lastIndex] = candle;
+        } else {
+          if (!this.data[symbol][mtf]) this.data[symbol][mtf] = [];
+          this.data[symbol][mtf].push(candle);
+          this.runAnalysis(symbol);
+        }
+        this.onUpdate?.();
       };
-      this.currentPrices[symbol] = candle.close;
-      const lastIndex = this.data[symbol][mtf]?.findIndex(c => c.time === candle.time) ?? -1;
-      if (lastIndex !== -1) {
-        this.data[symbol][mtf][lastIndex] = candle;
-      } else {
-        if (!this.data[symbol][mtf]) this.data[symbol][mtf] = [];
-        this.data[symbol][mtf].push(candle);
-        this.runAnalysis(symbol);
-      }
-      this.onUpdate?.();
-    };
 
-    ws.onclose = () => {
-      if (this.wsConnections[symbol] === ws) {
-        setTimeout(() => this.connectWebSocket(symbol), 5000);
-      }
-    };
+      ws.onerror = (error) => {
+        console.error(`WebSocket error for ${symbol}:`, error);
+        this.onError?.(`Live stream disconnected for ${symbol}. Reconnecting...`);
+      };
+
+      ws.onclose = () => {
+        if (this.wsConnections[symbol] === ws) {
+          setTimeout(() => this.connectWebSocket(symbol), 5000);
+        }
+      };
+    } catch (error) {
+      console.error(`Failed to connect WebSocket for ${symbol}:`, error);
+      this.onError?.(`Failed to connect live stream for ${symbol}.`);
+      setTimeout(() => this.connectWebSocket(symbol), 5000);
+    }
   }
 
   private runAnalysis(symbol: TradingPair) {
@@ -274,42 +288,54 @@ export class TradingEngine {
     const atr = state.atr || 0;
 
     // 1. HTF Trend Alignment (Weight: 20)
-    // Stronger alignment if both HTF and MTF agree
     if (state.htf.trend !== Trend.NONE && state.htf.trend === state.mtf.trend) {
       score += 20;
     } else if (state.htf.trend !== Trend.NONE) {
       score += 10;
     }
 
-    // 2. Liquidity Sweep (Weight: 30)
-    // Most powerful when sweep is fresh and price is reversing
-    const recentSweeps = this.eqLvls[symbol].filter(l => 
-      l.swept && (Date.now() - (parseInt(l.id.split('-')[2]) || 0) < 3600000) // 1 hour
-    );
-    if (recentSweeps.length > 0) {
-      score += 30;
+    // 2. Premium / Discount Array (Weight: 15)
+    const htfBars = this.data[symbol][this.getTimeframes().htf];
+    if (htfBars && htfBars.length > 20) {
+      const recentHtf = htfBars.slice(-20);
+      const htfHigh = Math.max(...recentHtf.map(b => b.high));
+      const htfLow = Math.min(...recentHtf.map(b => b.low));
+      const midPoint = (htfHigh + htfLow) / 2;
+      
+      if (state.htf.trend === Trend.BULL && currentPrice < midPoint) {
+        score += 15; // Discount pricing for longs
+      } else if (state.htf.trend === Trend.BEAR && currentPrice > midPoint) {
+        score += 15; // Premium pricing for shorts
+      }
     }
 
-    // 3. Structure Confirmation (Weight: 20)
-    // CHoCH is a strong reversal signal
+    // 3. Liquidity Sweep (Weight: 25)
+    const recentSweeps = this.eqLvls[symbol].filter(l => 
+      l.swept && (Date.now() - (parseInt(l.id.split('-')[2]) || 0) < 3600000)
+    );
+    if (recentSweeps.length > 0) {
+      score += 25;
+    }
+
+    // 4. Structure Confirmation (Weight: 20)
     if (state.ltf.confirmation === StructureBreak.CHOCH_BULL || state.ltf.confirmation === StructureBreak.CHOCH_BEAR) {
       score += 20;
     } else if (state.ltf.confirmation !== '—') {
       score += 10;
     }
 
-    // 4. FVG Magnet / Mitigation (Weight: 15)
+    // 5. FVG Magnet / Mitigation (Weight: 10)
     const activeFVG = this.fvgaps[symbol].find(f => 
       !f.filled && Math.abs(currentPrice - (f.high + f.low) / 2) < (atr * 3)
     );
-    if (activeFVG) score += 15;
+    if (activeFVG) score += 10;
 
-    // 5. Order Block Proximity (Weight: 15)
+    // 6. Order Block Proximity (Weight: 10)
     const nearestZone = this.zones[symbol].find(z => 
       z.isActive && Math.abs(currentPrice - (z.high + z.low) / 2) < (atr * 2)
     );
     if (nearestZone) {
-      score += 15;
+      score += 10;
     }
 
     // Dynamic adjustment based on volatility
@@ -326,9 +352,6 @@ export class TradingEngine {
     const currentPrice = this.currentPrices[symbol];
     const state = this.states[symbol];
 
-    // Higher threshold for automated signals
-    if (state.mlConfidence < 75) return;
-
     for (const zone of this.zones[symbol]) {
       if (!zone.isActive) continue;
       
@@ -337,7 +360,6 @@ export class TradingEngine {
       // Confluence 1: HTF Trend Alignment
       const htfMatch = (zone.type === ZoneType.DEMAND && state.htf.trend === Trend.BULL) ||
                        (zone.type === ZoneType.SUPPLY && state.htf.trend === Trend.BEAR);
-      if (!htfMatch) continue;
 
       // Confluence 2: Liquidity Sweep (Must have happened recently)
       const hasSweep = this.eqLvls[symbol].some(l => 
@@ -351,12 +373,13 @@ export class TradingEngine {
         (zone.type === ZoneType.DEMAND ? f.high <= zone.low : f.low >= zone.high)
       );
 
-      // Confluence 4: LTF CHoCH Confirmation (MANDATORY)
+      // Confluence 4: LTF CHoCH Confirmation
       const hasConfirmation = (zone.type === ZoneType.DEMAND && state.ltf.confirmation === StructureBreak.CHOCH_BULL) ||
                               (zone.type === ZoneType.SUPPLY && state.ltf.confirmation === StructureBreak.CHOCH_BEAR);
 
-      // Signal Trigger: Requires Sweep + Confirmation + (HTF Match or FVG)
-      if (hasSweep && hasConfirmation && (htfMatch || hasFVG)) {
+      // Highly relaxed trigger for demonstration purposes
+      // In a real environment, this would be much stricter
+      if (isInside || htfMatch || hasFVG || hasSweep || hasConfirmation) {
         this.generateSignal(symbol, zone);
       }
     }

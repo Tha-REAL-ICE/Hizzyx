@@ -50,6 +50,7 @@ export enum ZoneType {
 
 export enum TradeMode {
   SWING = 'SWING',
+  DAY = 'DAY',
   SCALP = 'SCALP'
 }
 

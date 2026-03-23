@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { supabase } from './lib/supabase';
 import { Trade, CustomRule, Signal } from './types';
 import JarvisOverlay from './components/JarvisOverlay';
@@ -6,8 +6,9 @@ import AuthScreen from './components/AuthScreen';
 import Sidebar, { PageId } from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import LogTrade from './components/LogTrade';
+import MarketAnalyst from './components/MarketAnalyst';
 import TradeRow from './components/TradeRow';
-import { Menu, X, Radio, Search, Zap, Clock, Globe, ArrowUpRight, ArrowDownRight, BrainCircuit } from 'lucide-react';
+import { Menu, X, Radio, Search, Zap, Clock, Globe, ArrowUpRight, ArrowDownRight, BrainCircuit, AlertTriangle } from 'lucide-react';
 import { cn } from './lib/utils';
 import { ai, SYSTEM_INSTRUCTION, analyzeTrade, auditSignal } from './lib/gemini';
 import { TradingEngine } from './lib/engine';
@@ -26,6 +27,8 @@ export default function App() {
   
   const [engineMode, setEngineMode] = useState<TradeMode>(TradeMode.SCALP);
   const [engineState, setEngineState] = useState<MarketState | null>(null);
+  const [allEngineStates, setAllEngineStates] = useState<Record<string, MarketState>>({});
+  const [engineError, setEngineError] = useState<string | null>(null);
   const engineRef = React.useRef<TradingEngine | null>(null);
 
   useEffect(() => {
@@ -50,7 +53,11 @@ export default function App() {
       engineRef.current = new TradingEngine('BTCUSD', engineMode, () => {
         if (engineRef.current) {
           setEngineState({ ...engineRef.current.getState() });
+          setAllEngineStates({ ...engineRef.current.getAllStates() });
         }
+      }, (err) => {
+        setEngineError(err);
+        setTimeout(() => setEngineError(null), 5000);
       });
 
       return () => {
@@ -147,6 +154,10 @@ export default function App() {
     };
   }, [trades]);
 
+  const handleJarvisComplete = React.useCallback(() => {
+    setJarvisDone(true);
+  }, []);
+
   if (loading) return null;
 
   if (!user) return <AuthScreen />;
@@ -154,48 +165,51 @@ export default function App() {
   return (
     <div className="min-h-screen bg-bg text-text font-sans selection:bg-red/30">
       <div className="grain"></div>
-      {!jarvisDone && <JarvisOverlay onComplete={() => setJarvisDone(true)} />}
+      {!jarvisDone && <JarvisOverlay onComplete={handleJarvisComplete} />}
 
       <div className={cn("flex flex-col min-h-screen", !jarvisDone && "invisible")}>
-        <header className="sticky top-0 z-[200] flex flex-col border-b border-border bg-bg/98 backdrop-blur-xl">
-          <div className="h-14 px-6 flex items-center justify-between">
-            <div className="flex items-center gap-3.5">
+        <header className="sticky top-0 z-[200] flex flex-col border-b-2 border-border2 bg-black">
+          <div className="h-16 px-6 flex items-center justify-between">
+            <div className="flex items-center gap-4">
               <button 
-                className="lg:hidden p-1 bg-none border-none cursor-pointer"
+                className="lg:hidden p-2 bg-s2 border border-border2 text-text hover:bg-red hover:text-black transition-colors"
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               >
-                {isSidebarOpen ? <X size={22} /> : <Menu size={22} />}
+                {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
-              <div className="flex items-baseline gap-2.5">
-                <span className="font-display text-[32px] tracking-wider text-red leading-none">HUNCHOLOGY</span>
+              <div className="flex items-baseline gap-3">
+                <span className="font-display text-[32px] tracking-tighter text-text leading-none uppercase">HUNCHOLOGY</span>
+                <span className="font-mono text-[10px] text-red tracking-widest uppercase hidden sm:inline-block border border-red/30 px-2 py-0.5 bg-red/5">Terminal</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-5">
-              <div className="hidden sm:flex items-center gap-6 mr-4">
-                <div className="flex flex-col items-center">
-                  <span className="font-mono text-[8px] text-muted uppercase tracking-widest mb-1">Neural Confidence</span>
+            <div className="flex items-center gap-6">
+              <div className="hidden sm:flex items-center gap-8 mr-4">
+                <div className="flex flex-col items-end">
+                  <span className="font-mono text-[9px] text-muted uppercase tracking-[0.2em] mb-1">Neural Sync</span>
                   <div className="flex items-baseline gap-1">
                     <span className={cn(
-                      "font-display text-[24px] font-bold leading-none",
+                      "font-display text-[28px] leading-none",
                       (engineState?.mlConfidence || 0) > 70 ? "text-lime" : "text-red"
                     )}>
                       {engineState?.mlConfidence || 0}%
                     </span>
                   </div>
                 </div>
-                <div className="h-8 w-[1px] bg-border/50"></div>
-                <div className="flex flex-col items-center">
-                  <span className="font-mono text-[8px] text-muted uppercase tracking-widest mb-1">Engine Mode</span>
+                <div className="h-10 w-[2px] bg-border2"></div>
+                <div className="flex flex-col items-end">
+                  <span className="font-mono text-[9px] text-muted uppercase tracking-[0.2em] mb-1">Mode</span>
                   <button 
                     onClick={() => {
-                      const newMode = engineMode === TradeMode.SCALP ? TradeMode.SWING : TradeMode.SCALP;
+                      const newMode = engineMode === TradeMode.SCALP ? TradeMode.DAY : 
+                                      engineMode === TradeMode.DAY ? TradeMode.SWING : TradeMode.SCALP;
                       setEngineMode(newMode);
                       engineRef.current?.setMode(newMode);
                     }}
                     className={cn(
                       "px-3 py-1 font-display text-[14px] font-bold tracking-widest rounded-sm border transition-all",
-                      engineMode === TradeMode.SCALP ? "bg-red/10 border-red text-red" : "bg-gold/10 border-gold text-gold"
+                      engineMode === TradeMode.SCALP ? "bg-red/10 border-red text-red" : 
+                      engineMode === TradeMode.DAY ? "bg-blue/10 border-blue text-blue" : "bg-gold/10 border-gold text-gold"
                     )}
                   >
                     {engineMode}
@@ -230,6 +244,13 @@ export default function App() {
           </div>
         </header>
 
+        {engineError && (
+          <div className="bg-red/10 border-b border-red/20 text-red px-6 py-2 font-mono text-[11px] flex items-center gap-2 z-[190] animate-in fade-in slide-in-from-top-2">
+            <AlertTriangle size={14} />
+            <span>{engineError}</span>
+          </div>
+        )}
+
         <div className="flex flex-1">
           <Sidebar 
             activePage={activePage} 
@@ -239,26 +260,32 @@ export default function App() {
             hasLiveSignal={signals.some(s => s.status === 'active')}
           />
           
-          <main className="flex-1 overflow-y-auto bg-bg p-7 lg:p-10">
-            {activePage === 'dashboard' && <Dashboard trades={trades} onUpdate={fetchData} />}
-            {activePage === 'log' && <LogTrade onTradeLogged={fetchData} />}
-            {activePage === 'history' && (
-              <div className="flex flex-col gap-6">
-                <div className="flex flex-col">
-                  <h1 className="font-display text-[36px] tracking-wider text-text mb-1">History</h1>
-                  <p className="text-[12px] text-sub mb-7 font-mono">All logged trades — click to expand AI feedback</p>
+          <main className="flex-1 overflow-y-auto bg-bg p-7 lg:p-10 relative">
+            <div className="absolute inset-0 pointer-events-none opacity-[0.03] z-0">
+              <div className="h-full w-full bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+            </div>
+            <div className="relative z-10">
+              {activePage === 'dashboard' && <Dashboard trades={trades} onUpdate={fetchData} />}
+              {activePage === 'log' && <LogTrade onTradeLogged={fetchData} />}
+              {activePage === 'analyst' && <MarketAnalyst engineStates={allEngineStates} />}
+              {activePage === 'history' && (
+                <div className="flex flex-col gap-6">
+                  <div className="flex flex-col">
+                    <h1 className="font-display text-[36px] tracking-wider text-text mb-1">History</h1>
+                    <p className="text-[12px] text-sub mb-7 font-mono">All logged trades — click to expand AI feedback</p>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {trades.map(t => (
+                      <TradeRow key={t.id} trade={t} onUpdate={fetchData} />
+                    ))}
+                    {!trades.length && <div className="text-center py-12 font-mono text-[10px] text-muted">No trades logged yet.</div>}
+                  </div>
                 </div>
-                <div className="flex flex-col gap-2">
-                  {trades.map(t => (
-                    <TradeRow key={t.id} trade={t} onUpdate={fetchData} />
-                  ))}
-                  {!trades.length && <div className="text-center py-12 font-mono text-[10px] text-muted">No trades logged yet.</div>}
-                </div>
-              </div>
-            )}
-            {activePage === 'signals' && <SignalsPage signals={signals} onSignalUpdate={fetchData} rules={rules} engineState={engineState} engineRef={engineRef} />}
-            {activePage === 'analytics' && <AnalyticsPage trades={trades} />}
-            {activePage === 'rules' && <RulesPage customRules={rules} onRulesUpdate={fetchData} />}
+              )}
+              {activePage === 'signals' && <SignalsPage signals={signals} onSignalUpdate={fetchData} rules={rules} engineState={engineState} engineRef={engineRef} />}
+              {activePage === 'analytics' && <AnalyticsPage trades={trades} />}
+              {activePage === 'rules' && <RulesPage customRules={rules} onRulesUpdate={fetchData} />}
+            </div>
           </main>
         </div>
       </div>
@@ -266,8 +293,42 @@ export default function App() {
   );
 }
 
+function Sparkline({ data, colorClass }: { data: number[], colorClass: string }) {
+  if (data.length < 2) return <div className="w-12 h-4"></div>;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const points = data.map((d, i) => `${(i / (data.length - 1)) * 48},${16 - ((d - min) / range) * 16}`).join(' ');
+  return (
+    <svg width="48" height="16" className={cn("overflow-visible", colorClass)}>
+      <polyline points={points} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef }: { signals: Signal[], onSignalUpdate: () => void, rules: CustomRule[], engineState: MarketState | null, engineRef: React.MutableRefObject<TradingEngine | null> }) {
-  const [manOpen, setManOpen] = useState(false);
+  const prevEngineStateRef = useRef<MarketState | null>(null);
+  useEffect(() => {
+    prevEngineStateRef.current = engineState;
+  }, [engineState]);
+  const prevState = prevEngineStateRef.current;
+
+  const [vitalsHistory, setVitalsHistory] = useState({
+    confidence: [] as number[],
+    atr: [] as number[],
+    zones: [] as number[],
+  });
+
+  useEffect(() => {
+    if (engineState) {
+      setVitalsHistory(prev => ({
+        confidence: [...prev.confidence.slice(-4), engineState.mlConfidence],
+        atr: [...prev.atr.slice(-4), engineState.atr],
+        zones: [...prev.zones.slice(-4), engineState.mtf.activeZones],
+      }));
+    }
+  }, [engineState?.mlConfidence, engineState?.atr, engineState?.mtf.activeZones]);
+
   const [loading, setLoading] = useState(false);
   const [sessionInfo, setSessionInfo] = useState({ name: 'London', status: 'Open', color: 'text-lime' });
   const [livePrice, setLivePrice] = useState<number | null>(null);
@@ -371,31 +432,6 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef }:
       }
     }
     await supabase.from('signals').update({ status: action }).eq('id', id);
-    onSignalUpdate();
-  };
-
-  const postSignal = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    setLoading(true);
-    await supabase.from('signals').insert({
-      user_id: user.id,
-      pair: formData.get('pair'),
-      direction: formData.get('direction'),
-      session: formData.get('session'),
-      entry_price: formData.get('entry'),
-      stop_loss: formData.get('sl'),
-      take_profit: formData.get('tp'),
-      reasoning: formData.get('reason'),
-      source: 'Manual',
-      status: 'active',
-      mode: engineState?.mode || TradeMode.SCALP
-    });
-    setLoading(false);
-    setManOpen(false);
     onSignalUpdate();
   };
 
@@ -649,9 +685,9 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef }:
                   <Radio size={56} className="text-muted/40 animate-pulse" />
                   <div className="absolute inset-0 bg-red/10 blur-3xl rounded-full"></div>
                 </div>
-                <h2 className="font-display text-[28px] text-sub font-bold tracking-widest mb-4 uppercase">Awaiting Confluence</h2>
+                <h2 className="font-display text-[28px] text-sub font-bold tracking-widest mb-4 uppercase">Scanning Markets</h2>
                 <p className="font-mono text-[11px] text-muted max-w-xs mx-auto leading-relaxed uppercase tracking-[0.2em]">
-                  Scanning 5 global markets for high-probability smart money setups.
+                  Monitoring global pairs for high-probability trade setups based on current engine mode.
                 </p>
               </div>
             </div>
@@ -660,61 +696,7 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef }:
           <div className="space-y-4">
             <div className="flex items-center justify-between px-2">
               <span className="font-mono text-[10px] text-muted uppercase tracking-[0.3em]">Signal History Log</span>
-              <button 
-                onClick={() => setManOpen(!manOpen)}
-                className="font-mono text-[10px] text-red uppercase tracking-widest hover:underline"
-              >
-                {manOpen ? '[ Close ]' : '[ + Manual ]'}
-              </button>
             </div>
-
-            {manOpen && (
-              <div className="bg-s1 border border-border rounded-sm p-8 animate-[fadeUp_0.3s_ease_out]">
-                <form className="space-y-6" onSubmit={postSignal}>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                      <label className="font-mono text-[9px] uppercase tracking-widest text-muted">Pair</label>
-                      <select name="pair" className="w-full bg-s2 border border-border text-text p-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-all">
-                        <option value="">Select</option><option>XAUUSD</option><option>BTCUSD</option><option>ETHUSD</option><option>EURUSD</option><option>GBPUSD</option>
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="font-mono text-[9px] uppercase tracking-widest text-muted">Side</label>
-                      <select name="direction" className="w-full bg-s2 border border-border text-text p-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-all">
-                        <option value="">Select</option><option value="LONG">LONG</option><option value="SHORT">SHORT</option>
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="font-mono text-[9px] uppercase tracking-widest text-muted">Session</label>
-                      <select name="session" className="w-full bg-s2 border border-border text-text p-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-all">
-                        <option value="">Select</option><option>London</option><option>New York</option><option>Asia</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                      <label className="font-mono text-[9px] uppercase tracking-widest text-muted">Entry</label>
-                      <input name="entry" type="number" step="0.00001" className="w-full bg-s2 border border-border text-text p-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-all" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="font-mono text-[9px] uppercase tracking-widest text-muted">SL</label>
-                      <input name="sl" type="number" step="0.00001" className="w-full bg-s2 border border-border text-text p-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-all" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="font-mono text-[9px] uppercase tracking-widest text-muted">TP</label>
-                      <input name="tp" type="number" step="0.00001" className="w-full bg-s2 border border-border text-text p-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-all" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="font-mono text-[9px] uppercase tracking-widest text-muted">Technical Reasoning</label>
-                    <textarea name="reason" className="w-full bg-s2 border border-border text-text p-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-all min-h-[100px]"></textarea>
-                  </div>
-                  <button type="submit" disabled={loading} className="w-full py-4 bg-red text-white font-mono text-[12px] font-bold tracking-[0.2em] uppercase rounded-sm hover:bg-red/90 transition-all">
-                    {loading ? 'Transmitting...' : 'Broadcast Signal'}
-                  </button>
-                </form>
-              </div>
-            )}
 
             <div className="space-y-2">
               {signals.map(s => (
@@ -760,15 +742,61 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef }:
 
             <div className="space-y-5">
               {[
-                { label: 'Neural Confidence', val: `${engineState?.mlConfidence || 0}%`, color: (engineState?.mlConfidence || 0) > 70 ? 'text-lime' : 'text-text' },
-                { label: 'Volatility (ATR)', val: engineState?.atr.toFixed(4) || '—' },
-                { label: 'S/D Zones', val: `${engineState?.mtf.activeZones} Active` },
-                { label: 'HTF Trend', val: engineState?.htf.trend, color: engineState?.htf.trend === Trend.BULL ? 'text-lime' : 'text-red' },
-                { label: 'MTF Trend', val: engineState?.mtf.trend, color: engineState?.mtf.trend === Trend.BULL ? 'text-lime' : 'text-red' }
+                { 
+                  label: 'Neural Confidence', 
+                  val: `${engineState?.mlConfidence || 0}%`, 
+                  color: (engineState?.mlConfidence || 0) > 70 ? 'text-lime' : 'text-text',
+                  trend: prevState && engineState && engineState.mlConfidence !== prevState.mlConfidence 
+                    ? (engineState.mlConfidence > prevState.mlConfidence ? 'up' : 'down') 
+                    : null,
+                  sparklineData: vitalsHistory.confidence,
+                  sparklineColor: (engineState?.mlConfidence || 0) > 70 ? 'text-lime' : 'text-red'
+                },
+                { 
+                  label: 'Volatility (ATR)', 
+                  val: engineState?.atr.toFixed(4) || '—',
+                  trend: prevState && engineState && Math.abs(engineState.atr - prevState.atr) > 0.0001
+                    ? (engineState.atr > prevState.atr ? 'up' : 'down')
+                    : null,
+                  sparklineData: vitalsHistory.atr,
+                  sparklineColor: (engineState?.atr || 0) > 0.005 ? 'text-red' : 'text-lime'
+                },
+                { 
+                  label: 'S/D Zones', 
+                  val: `${engineState?.mtf.activeZones} Active`,
+                  trend: prevState && engineState && engineState.mtf.activeZones !== prevState.mtf.activeZones
+                    ? (engineState.mtf.activeZones > prevState.mtf.activeZones ? 'up' : 'down')
+                    : null,
+                  sparklineData: vitalsHistory.zones,
+                  sparklineColor: 'text-blue-400'
+                },
+                { 
+                  label: 'HTF Trend', 
+                  val: engineState?.htf.trend, 
+                  color: engineState?.htf.trend === Trend.BULL ? 'text-lime' : 'text-red',
+                  trend: prevState && engineState && engineState.htf.trend !== prevState.htf.trend
+                    ? (engineState.htf.trend === Trend.BULL ? 'up' : 'down')
+                    : null
+                },
+                { 
+                  label: 'MTF Trend', 
+                  val: engineState?.mtf.trend, 
+                  color: engineState?.mtf.trend === Trend.BULL ? 'text-lime' : 'text-red',
+                  trend: prevState && engineState && engineState.mtf.trend !== prevState.mtf.trend
+                    ? (engineState.mtf.trend === Trend.BULL ? 'up' : 'down')
+                    : null
+                }
               ].map((v, i) => (
                 <div key={i} className="flex items-center justify-between py-1.5 border-b border-border/50 last:border-0">
                   <span className="font-mono text-[9px] text-muted uppercase tracking-wider">{v.label}</span>
-                  <span className={cn("font-mono text-[11px] font-bold", v.color || "text-text")}>{v.val}</span>
+                  <div className="flex items-center gap-2">
+                    {v.sparklineData && <Sparkline data={v.sparklineData} colorClass={v.sparklineColor || 'text-muted'} />}
+                    <div className="flex items-center gap-1.5 w-16 justify-end">
+                      <span className={cn("font-mono text-[11px] font-bold", v.color || "text-text")}>{v.val}</span>
+                      {v.trend === 'up' && <ArrowUpRight size={12} className="text-lime" />}
+                      {v.trend === 'down' && <ArrowDownRight size={12} className="text-red" />}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -914,15 +942,15 @@ function RulesPage({ customRules, onRulesUpdate }: { customRules: CustomRule[], 
   const [loading, setLoading] = useState(false);
 
   const defaultRules = [
+    { text: "HTF structure first. Always establish direction before looking at entry.", source: "Hunchology" },
+    { text: "ZOOM OUT then in — look at the full bias before executing.", source: "Notion — Discussion" },
+    { text: "Wait for LTF confirmation — IDM, BOS, CHoCH — before pulling the trigger.", source: "Hunchology" },
+    { text: "Be simple. Find bias, reasoning, and execution level. That's it.", source: "Hunchology" },
+    { text: "ALWAYS stick to the plan — never remove SL or move TP.", source: "Notion — Discussion" },
     { text: "Avoid overtrading. One quality setup beats five mediocre ones.", source: "Notion — Discussion" },
     { text: "Stop spending too much time looking at the charts. Set and forget.", source: "Notion — Discussion" },
-    { text: "ALWAYS stick to the plan — never remove SL or move TP.", source: "Notion — Discussion" },
     { text: "Small profits pile up long term. Kill greed.", source: "Notion — Discussion" },
-    { text: "ZOOM OUT then in — look at the full bias before executing.", source: "Notion — Discussion" },
     { text: "Detachment is the edge. Not caring about the trade = trusting your setup.", source: "Hunchology" },
-    { text: "Be simple. Find bias, reasoning, and execution level. That's it.", source: "Hunchology" },
-    { text: "HTF structure first. Always establish direction before looking at entry.", source: "Hunchology" },
-    { text: "Wait for LTF confirmation — IDM, BOS, CHoCH — before pulling the trigger.", source: "Hunchology" },
     { text: "No revenge trading. One loss doesn't affect your edge.", source: "Hunchology" }
   ];
 
@@ -938,43 +966,79 @@ function RulesPage({ customRules, onRulesUpdate }: { customRules: CustomRule[], 
     setLoading(false);
   };
 
-  const allRules = [...defaultRules, ...customRules.map(r => ({ text: r.rule_text, source: 'Custom' }))];
+  const deleteRule = async (id: string) => {
+    setLoading(true);
+    await supabase.from('custom_rules').delete().eq('id', id);
+    onRulesUpdate();
+    setLoading(false);
+  };
+
+  const allRules = [
+    ...defaultRules.map(r => ({ ...r, id: 'default-' + r.text })), 
+    ...customRules.map(r => ({ text: r.rule_text, source: 'Custom', id: r.id }))
+  ];
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col">
-        <h1 className="font-display text-[36px] tracking-wider text-text mb-1">Rules</h1>
-        <p className="text-[12px] text-sub mb-7 font-mono">Your Hunchology framework — the law you trade by</p>
+        <h1 className="font-display text-[36px] tracking-wider text-text mb-1">Trading Framework</h1>
+        <p className="text-[12px] text-sub mb-7 font-mono">Your step-by-step flowchart and rules for execution</p>
       </div>
 
-      <div className="flex flex-col gap-2.5 max-w-[640px]">
+      <div className="flex flex-col items-center max-w-[640px] w-full relative py-4">
         {allRules.map((r, i) => (
-          <div key={i} className="grid grid-cols-[40px_1fr] gap-3.5 items-start p-4 bg-s1 border border-border border-l-2 border-l-red rounded-sm">
-            <div className="font-display text-[28px] text-red leading-none opacity-40">{String(i + 1).padStart(2, '0')}</div>
-            <div className="pt-0.5">
-              <div className="text-[13px] leading-relaxed text-text">{r.text}</div>
-              <div className="font-mono text-[8px] text-muted mt-1 tracking-wider">{r.source}</div>
+          <div key={r.id} className="flex flex-col items-center w-full group">
+            <div className="relative w-full bg-s1 border border-border rounded-md p-5 transition-all hover:border-red/50 hover:shadow-[0_0_15px_rgba(255,68,68,0.1)] z-10">
+              <div className="absolute -left-3 -top-3 w-6 h-6 bg-red text-white rounded-full flex items-center justify-center font-mono text-[10px] font-bold border-2 border-bg">
+                {i + 1}
+              </div>
+              
+              {r.source === 'Custom' && (
+                <button 
+                  onClick={() => deleteRule(r.id)}
+                  className="absolute top-3 right-3 text-sub hover:text-red opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Delete Step"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              )}
+
+              <div className="text-[13px] leading-relaxed text-text font-medium text-center">{r.text}</div>
+              <div className="font-mono text-[9px] text-muted mt-2 tracking-widest uppercase text-center">{r.source}</div>
             </div>
+
+            {i < allRules.length - 1 && (
+              <div className="h-8 w-[2px] bg-border my-1 relative">
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-2 h-2 border-b-2 border-r-2 border-border rotate-45"></div>
+              </div>
+            )}
           </div>
         ))}
-      </div>
 
-      <div className="flex gap-2.5 mt-4 max-w-[640px]">
-        <input 
-          type="text" 
-          value={newRule}
-          onChange={e => setNewRule(e.target.value)}
-          className="flex-1 bg-s2 border border-border text-text p-2.5 px-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-colors"
-          placeholder="Write a new rule..."
-          onKeyDown={e => e.key === 'Enter' && addRule()}
-        />
-        <button 
-          className="px-4.5 py-2.5 bg-red text-white border-none font-mono text-[10px] font-bold tracking-wider rounded-sm cursor-pointer whitespace-nowrap hover:bg-[#ff5555] disabled:opacity-40"
-          onClick={addRule}
-          disabled={loading}
-        >
-          + Add Rule
-        </button>
+        <div className="h-8 w-[2px] bg-border my-1 relative">
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-2 h-2 border-b-2 border-r-2 border-border rotate-45"></div>
+        </div>
+
+        <div className="w-full bg-s2 border border-dashed border-border rounded-md p-4 flex flex-col gap-3 z-10 mt-2">
+          <div className="font-mono text-[10px] text-sub uppercase tracking-widest text-center">Add Framework Step</div>
+          <div className="flex gap-2.5">
+            <input 
+              type="text" 
+              value={newRule}
+              onChange={e => setNewRule(e.target.value)}
+              className="flex-1 bg-bg border border-border text-text p-2.5 px-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-colors"
+              placeholder="e.g. Check 15m timeframe for CHoCH..."
+              onKeyDown={e => e.key === 'Enter' && addRule()}
+            />
+            <button 
+              className="px-4 py-2.5 bg-red text-white border-none font-mono text-[10px] font-bold tracking-wider rounded-sm cursor-pointer whitespace-nowrap hover:bg-[#ff5555] disabled:opacity-40"
+              onClick={addRule}
+              disabled={loading}
+            >
+              + Add Step
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
