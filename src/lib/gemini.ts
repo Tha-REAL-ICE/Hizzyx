@@ -33,7 +33,7 @@ EMOS: ${trade.emotions?.join(',') || '—'}
 ${trade.notes ? `NOTES: ${trade.notes}` : ''}`;
 
   const response = await ai.models.generateContent({
-    model: "gemini-3.1-pro-preview",
+    model: "gemini-3-flash-preview",
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     config: { systemInstruction: SYSTEM_INSTRUCTION }
   });
@@ -59,7 +59,7 @@ Provide a "Neural Core Verdict". Is this a high-probability setup or a trap buil
 Format: Line1: VERDICT: [HIGH QUALITY / CAUTION / AVOID]. Blank line. 3 sentences of aggressive, cold analysis.`;
 
   const response = await ai.models.generateContent({
-    model: "gemini-3.1-pro-preview",
+    model: "gemini-3-flash-preview",
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     config: { systemInstruction: SYSTEM_INSTRUCTION }
   });

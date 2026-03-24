@@ -880,7 +880,7 @@ function AnalyticsPage({ trades }: { trades: Trade[] }) {
     const sum = trades.map(t => `${t.pair} ${t.direction}|${t.outcome}|Rules:${t.rules_followed}|Emos:${(t.emotions || []).join(',') || 'none'}|Session:${t.session || '—'}`).join('\n');
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
+        model: "gemini-3-flash-preview",
         contents: [{ role: 'user', parts: [{ text: `Analyze ${trades.length} trades for patterns. 4-6 specific insights on emotional patterns, rule breaches, pair performance, session performance.\n\n${sum}` }] }],
         config: { systemInstruction: SYSTEM_INSTRUCTION }
       });

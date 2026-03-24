@@ -53,7 +53,7 @@ Be concise, highly analytical, and use an aggressive, tech-geeky, terminal-like 
       contents.push({ role: 'user', parts: [{ text: userMsg }] });
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.1-pro-preview',
+        model: 'gemini-3-flash-preview',
         contents: contents,
         config: {
           systemInstruction,
