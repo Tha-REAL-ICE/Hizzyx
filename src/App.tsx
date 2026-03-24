@@ -111,6 +111,21 @@ export default function App() {
     }
   }, [engineMode]);
 
+  const [sessionInfo, setSessionInfo] = useState({ name: 'London', status: 'Open', color: 'text-lime' });
+
+  useEffect(() => {
+    const updateSession = () => {
+      const hour = new Date().getUTCHours();
+      if (hour >= 8 && hour < 16) setSessionInfo({ name: 'London', status: 'Open', color: 'text-lime' });
+      else if (hour >= 13 && hour < 21) setSessionInfo({ name: 'New York', status: 'Open', color: 'text-lime' });
+      else if (hour >= 0 && hour < 8) setSessionInfo({ name: 'Asia', status: 'Open', color: 'text-lime' });
+      else setSessionInfo({ name: 'Pre-Market', status: 'Closed', color: 'text-muted' });
+    };
+    updateSession();
+    const interval = setInterval(updateSession, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   const fetchData = async () => {
     const [tr, rr, sr] = await Promise.all([
       supabase.from('trades').select('*').order('created_at', { ascending: false }),
@@ -175,25 +190,25 @@ export default function App() {
 
       <div className={cn("flex flex-col h-screen overflow-hidden", !jarvisDone && "invisible")}>
         <header className="flex-none border-b-2 border-border2 bg-black z-[200] shadow-[0_5px_30px_rgba(0,0,0,0.8)]">
-          <div className="min-h-[80px] py-4 px-4 lg:px-8 flex flex-wrap items-center justify-between gap-6">
-            <div className="flex items-center gap-6 min-w-0">
+          <div className="min-h-[60px] lg:min-h-[80px] py-2 lg:py-4 px-4 lg:px-8 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 lg:gap-6 min-w-0">
               <button 
-                className="lg:hidden p-2 bg-black border-2 border-border2 text-white hover:bg-red hover:border-red transition-colors shrink-0 shadow-[0_0_10px_rgba(255,0,0,0.2)]"
+                className="lg:hidden p-2 bg-black border-2 border-border2 text-white hover:bg-red hover:border-red transition-colors shrink-0 shadow-[0_0_10px_rgba(255,0,0,0.2)] z-[210]"
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               >
-                {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+                {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
               </button>
-              <div className="flex items-center gap-4 group cursor-pointer" onClick={() => setActivePage('dashboard')}>
-                <div className="w-10 h-10 bg-red flex items-center justify-center shadow-[0_0_20px_rgba(255,0,0,0.6)] group-hover:scale-110 transition-transform border-2 border-red/50">
-                  <BrainCircuit className="w-6 h-6 text-black" />
+              <div className="flex items-center gap-3 lg:gap-4 group cursor-pointer" onClick={() => setActivePage('dashboard')}>
+                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-red flex items-center justify-center shadow-[0_0_20px_rgba(255,0,0,0.6)] group-hover:scale-110 transition-transform border-2 border-red/50">
+                  <BrainCircuit className="w-5 h-5 lg:w-6 lg:h-6 text-black" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-display text-2xl font-black tracking-tighter text-white leading-none drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">HUNCHOLOGY</span>
-                  <span className="font-mono text-[10px] text-red tracking-[0.4em] font-black uppercase drop-shadow-[0_0_2px_rgba(255,0,0,0.8)]">NEURAL CORE v12</span>
+                  <span className="font-display text-lg lg:text-2xl font-black tracking-tighter text-white leading-none drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">HUNCHOLOGY</span>
+                  <span className="font-mono text-[8px] lg:text-[10px] text-red tracking-[0.4em] font-black uppercase drop-shadow-[0_0_2px_rgba(255,0,0,0.8)]">NEURAL CORE</span>
                 </div>
               </div>
 
-              <div className="hidden md:flex items-center gap-8 border-l-2 border-border2 pl-8 ml-4">
+              <div className="hidden xl:flex items-center gap-8 border-l-2 border-border2 pl-8 ml-4">
                 <div className="flex flex-col">
                   <span className="font-mono text-[10px] text-muted uppercase tracking-[0.3em] font-bold">Win Rate</span>
                   <span className="font-mono text-lg text-lime font-black drop-shadow-[0_0_5px_rgba(200,255,0,0.5)]">{stats.wr}</span>
@@ -205,21 +220,25 @@ export default function App() {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 sm:gap-6 shrink-0">
-              <div className="hidden lg:flex items-center gap-2 bg-black border-2 border-border2 px-4 py-2 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]">
-                <div className={cn("w-2 h-2 animate-pulse shadow-[0_0_10px_currentColor]", isSyncing ? "bg-gold text-gold" : "bg-lime text-lime")} />
-                <span className="font-mono text-[11px] text-white font-bold uppercase tracking-[0.2em]">
-                  {isSyncing ? 'SYNCING...' : 'ENGINE ONLINE'}
-                </span>
+            <div className="flex items-center gap-3 lg:gap-6 shrink-0">
+              <div className="hidden sm:flex items-center gap-4 bg-black border-2 border-border2 px-3 lg:px-4 py-1.5 lg:py-2 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]">
+                <div className="flex flex-col items-center">
+                  <div className={cn("w-1.5 h-1.5 animate-pulse shadow-[0_0_10px_currentColor]", sessionInfo.color === 'text-lime' ? "bg-lime text-lime" : "bg-muted text-muted")} />
+                  <span className="font-mono text-[7px] text-muted uppercase mt-0.5">Status</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-mono text-[9px] lg:text-[10px] text-white font-bold uppercase tracking-[0.2em] leading-tight">{sessionInfo.name}</span>
+                  <span className="font-mono text-[7px] lg:text-[8px] text-red uppercase tracking-[0.1em] leading-tight">{engineState?.symbol || 'AWAITING'}</span>
+                </div>
               </div>
 
-              <div className="flex items-center bg-black border-2 border-border2 p-1 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)] overflow-x-auto max-w-[full]">
+              <div className="flex items-center bg-black border-2 border-border2 p-0.5 lg:p-1 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)] overflow-x-auto no-scrollbar max-w-[120px] sm:max-w-none">
                 {(Object.values(TradeMode) as TradeMode[]).map((m) => (
                   <button
                     key={m}
                     onClick={() => setEngineMode(m)}
                     className={cn(
-                      "px-3 sm:px-4 py-1.5 font-mono text-[10px] sm:text-[11px] font-black tracking-[0.2em] uppercase transition-all whitespace-nowrap",
+                      "px-2 lg:px-4 py-1 lg:py-1.5 font-mono text-[9px] lg:text-[11px] font-black tracking-[0.2em] uppercase transition-all whitespace-nowrap",
                       engineMode === m 
                         ? "bg-red text-black shadow-[0_0_15px_rgba(255,0,0,0.6)]" 
                         : "text-muted hover:text-white hover:bg-s1"
@@ -230,17 +249,17 @@ export default function App() {
                 ))}
               </div>
 
-              <div className="flex items-center gap-4 border-l-2 border-border2 pl-4 sm:pl-6 ml-0 sm:ml-2">
+              <div className="flex items-center gap-3 lg:gap-4 border-l-2 border-border2 pl-3 lg:pl-6 ml-0 lg:ml-2">
                 <div className="hidden sm:flex flex-col items-end">
-                  <span className="font-mono text-[12px] text-white font-bold lowercase tracking-widest">{user?.email?.split('@')[0]}</span>
-                  <span className="font-mono text-[9px] text-red uppercase tracking-[0.3em] font-black">Operator</span>
+                  <span className="font-mono text-[10px] lg:text-[12px] text-white font-bold lowercase tracking-widest">{user?.email?.split('@')[0]}</span>
+                  <span className="font-mono text-[8px] lg:text-[9px] text-red uppercase tracking-[0.3em] font-black">Operator</span>
                 </div>
                 <button 
                   onClick={() => supabase.auth.signOut()}
-                  className="p-2.5 bg-black border-2 border-border2 text-muted hover:text-red hover:border-red transition-colors shadow-[0_0_10px_rgba(0,0,0,0.5)] hover:shadow-[0_0_15px_rgba(255,0,0,0.4)]"
+                  className="p-2 lg:p-2.5 bg-black border-2 border-border2 text-muted hover:text-red hover:border-red transition-colors shadow-[0_0_10px_rgba(0,0,0,0.5)] hover:shadow-[0_0_15px_rgba(255,0,0,0.4)]"
                   title="Disconnect"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4 lg:w-5 lg:h-5" />
                 </button>
               </div>
             </div>
@@ -268,11 +287,14 @@ export default function App() {
             hasLiveSignal={signals.some(s => s.status === 'active')}
           />
           
-          <main className="flex-1 overflow-y-auto bg-bg relative custom-scrollbar">
+          <main className="flex-1 overflow-y-auto bg-bg relative custom-scrollbar flex flex-col">
             <div className="absolute inset-0 pointer-events-none opacity-[0.02] z-0">
               <div className="h-full w-full bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:60px_60px]"></div>
             </div>
-            <div className="relative z-10">
+            <div className={cn(
+              "relative z-10 flex-1 flex flex-col",
+              activePage === 'analyst' ? "p-0" : "p-4 sm:p-6 lg:p-8"
+            )}>
               {activePage === 'dashboard' && <Dashboard trades={trades} onUpdate={fetchData} />}
               {activePage === 'log' && <LogTrade onTradeLogged={fetchData} />}
               {activePage === 'analyst' && <MarketAnalyst engineStates={allEngineStates} />}
@@ -303,10 +325,16 @@ export default function App() {
                     await engineRef.current?.reSync();
                     setIsSyncing(false);
                   }}
+                  sessionInfo={sessionInfo}
+                  engineMode={engineMode}
                 />
               )}
               {activePage === 'analytics' && <AnalyticsPage trades={trades} />}
-              {activePage === 'rules' && <RulesPage customRules={rules} onRulesUpdate={fetchData} />}
+              {activePage === 'rules' && (
+                <div className="max-w-7xl mx-auto w-full">
+                  <RulesPage customRules={rules} onRulesUpdate={fetchData} />
+                </div>
+              )}
             </div>
           </main>
         </div>
@@ -328,7 +356,7 @@ function Sparkline({ data, colorClass }: { data: number[], colorClass: string })
   );
 }
 
-function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef, isSyncing, onReSync }: any) {
+function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef, isSyncing, onReSync, sessionInfo, engineMode }: any) {
   const prevEngineStateRef = useRef<MarketState | null>(null);
   useEffect(() => {
     prevEngineStateRef.current = engineState;
@@ -352,15 +380,15 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef, i
   }, [engineState?.mlConfidence, engineState?.atr, engineState?.mtf.activeZones]);
 
   const [loading, setLoading] = useState(false);
-  const [sessionInfo, setSessionInfo] = useState({ name: 'London', status: 'Open', color: 'text-lime' });
   const [livePrice, setLivePrice] = useState<number | null>(null);
   const [auditResult, setAuditResult] = useState<string | null>(null);
   const [auditing, setAuditing] = useState(false);
   
   const [balance, setBalance] = useState('100000');
   const [riskPct, setRiskPct] = useState('1');
+  const [alerts, setAlerts] = useState<{ id: string; type: string; level: number; triggered: boolean }[]>([]);
 
-  const active = signals.find(s => s.status === 'active');
+  const active = signals.find((s: Signal) => s.status === 'active');
 
   useEffect(() => {
     setAuditResult(null);
@@ -370,7 +398,7 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef, i
     if (!active) return;
     setAuditing(true);
     try {
-      const ruleTexts = rules.map(r => r.rule_text);
+      const ruleTexts = rules.map((r: any) => r.rule_text);
       const result = await auditSignal(active, ruleTexts);
       setAuditResult(result);
     } catch (err) {
@@ -401,37 +429,35 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef, i
   };
 
   useEffect(() => {
-    const updateSession = () => {
-      const hour = new Date().getUTCHours();
-      if (hour >= 8 && hour < 16) setSessionInfo({ name: 'London', status: 'Open', color: 'text-lime' });
-      else if (hour >= 13 && hour < 21) setSessionInfo({ name: 'New York', status: 'Open', color: 'text-lime' });
-      else if (hour >= 0 && hour < 8) setSessionInfo({ name: 'Asia', status: 'Open', color: 'text-lime' });
-      else setSessionInfo({ name: 'Pre-Market', status: 'Closed', color: 'text-muted' });
-    };
-    updateSession();
-    const interval = setInterval(updateSession, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (!active) {
+    if (!active || !engineRef.current) {
       setLivePrice(null);
       return;
     }
     
-    const base = parseFloat(active.entry_price || '0');
-    if (!base) return;
+    // Use the actual live price for the specific pair
+    const pairState = engineRef.current.getState(active.pair);
+    if (pairState) {
+      setLivePrice(pairState.mtf.price);
+    }
+  }, [active, engineState]);
 
-    const interval = setInterval(() => {
-      setLivePrice(prev => {
-        const current = prev || base;
-        const change = (Math.random() - 0.5) * (base * 0.0005);
-        return parseFloat((current + change).toFixed(active.pair.includes('JPY') ? 3 : active.pair.includes('USD') && !active.pair.includes('BTC') && !active.pair.includes('XAU') ? 5 : 2));
+  // Alert System
+  useEffect(() => {
+    if (!livePrice || !active || alerts.length === 0) return;
+
+    const triggered = alerts.filter(a => !a.triggered && Math.abs(livePrice - a.level) < (livePrice * 0.0001));
+    if (triggered.length > 0) {
+      triggered.forEach(a => {
+        // In a real app we'd use browser notifications, here we just mark as triggered
+        console.log(`ALERT TRIGGERED: ${a.type} at ${a.level}`);
       });
-    }, 2000);
+      setAlerts(prev => prev.map(a => triggered.some(t => t.id === a.id) ? { ...a, triggered: true } : a));
+    }
+  }, [livePrice, alerts, active]);
 
-    return () => clearInterval(interval);
-  }, [active]);
+  const addAlert = (type: string, level: number) => {
+    setAlerts(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), type, level, triggered: false }]);
+  };
 
   const actSignal = async (id: string, action: 'TAKEN' | 'SKIPPED') => {
     if (action === 'TAKEN' && active) {
@@ -468,11 +494,11 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef, i
           <div className="flex items-center gap-4">
             <h1 className="font-display text-[48px] font-black tracking-tighter text-text leading-none uppercase">HIZZYX <span className="text-red">OS</span></h1>
             <div className="flex items-center gap-2 px-3 py-1 bg-red/10 border border-red/40 rounded-sm shadow-[0_0_15px_rgba(255,61,61,0.1)]">
-              <div className="w-2 h-2 bg-red rounded-full animate-pulse"></div>
-              <span className="font-mono text-[10px] text-red font-black tracking-[0.2em] uppercase">Neural v12.4</span>
+              <div className={cn("w-2 h-2 rounded-full shadow-lg", sessionInfo.color === 'text-lime' ? 'bg-lime shadow-lime/20 animate-pulse' : 'bg-muted')}></div>
+              <span className="font-mono text-[10px] text-red font-black tracking-[0.2em] uppercase">{sessionInfo.name} | {engineState?.symbol || 'AWAITING'}</span>
             </div>
           </div>
-          <p className="text-[13px] text-sub font-mono tracking-[0.3em] uppercase border-l-4 border-red pl-6 py-2 bg-s1/30">Neural MTF Confluence Engine</p>
+          <p className="text-[13px] text-sub font-mono tracking-[0.3em] uppercase border-l-4 border-red pl-6 py-2 bg-s1/30">Neural {engineMode.toUpperCase()} Confluence Engine</p>
         </div>
 
         <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -496,10 +522,12 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef, i
                 )}
                 <div className="flex items-center justify-between">
                   <span className={cn("font-mono text-[12px] font-black tracking-widest uppercase", isActive ? "text-red" : "text-sub")}>{s}</span>
-                  <div className={cn("w-2.5 h-2.5 rounded-full shadow-lg", sState?.htf.trend === Trend.BULL ? "bg-lime shadow-lime/20" : "bg-red shadow-red/20")}></div>
+                  <div className={cn("w-2.5 h-2.5 rounded-full shadow-lg", sState?.htf?.trend === Trend.BULL ? "bg-lime shadow-lime/20" : "bg-red shadow-red/20")}></div>
                 </div>
                 <div className="flex items-end justify-between mt-3">
-                  <span className="font-display text-[22px] font-black tracking-tighter text-text">${sState?.mtf.price.toFixed(s.includes('USD') && !s.includes('BTC') ? 4 : 1)}</span>
+                  <span className="font-display text-[22px] font-black tracking-tighter text-text">
+                    {sState?.mtf?.price !== undefined ? `$${sState.mtf.price.toFixed(s.includes('USD') && !s.includes('BTC') ? 4 : 1)}` : '—'}
+                  </span>
                   <div className="flex flex-col items-end">
                     <span className={cn("font-mono text-[11px] font-black", (sState?.mlConfidence || 0) > 70 ? "text-lime" : "text-red")}>
                       {sState?.mlConfidence || 0}%
@@ -535,16 +563,28 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef, i
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-10">
                       {[
-                        { label: 'Entry', val: active.entry_price, color: 'text-text' },
-                        { label: 'Current', val: livePrice, color: pnl >= 0 ? 'text-lime' : 'text-red' },
-                        { label: 'Stop Loss', val: active.stop_loss, color: 'text-red/80' },
-                        { label: 'Take Profit', val: active.take_profit, color: 'text-lime/80' }
+                        { label: 'Entry', val: active.entry_price, color: 'text-text', type: 'ENTRY' },
+                        { label: 'Current', val: livePrice, color: pnl >= 0 ? 'text-lime' : 'text-red', type: 'CURRENT' },
+                        { label: 'Stop Loss', val: active.stop_loss, color: 'text-red/80', type: 'SL' },
+                        { label: 'Take Profit', val: active.take_profit, color: 'text-lime/80', type: 'TP' }
                       ].map((item, i) => (
-                        <div key={i} className="bg-black border border-border2 p-5 rounded-sm shadow-inner">
+                        <div key={i} className="bg-black border border-border2 p-5 rounded-sm shadow-inner relative group">
                           <span className="font-mono text-[9px] text-muted uppercase tracking-widest block mb-3 font-bold">{item.label}</span>
                           <span className={cn("font-mono text-[20px] font-black tracking-tighter", item.color)}>
                             {typeof item.val === 'number' ? item.val.toLocaleString(undefined, { minimumFractionDigits: active.pair.includes('JPY') ? 3 : 2 }) : item.val || '—'}
                           </span>
+                          {item.type !== 'CURRENT' && item.val && (
+                            <button 
+                              onClick={() => addAlert(item.type, parseFloat(item.val as string))}
+                              className={cn(
+                                "absolute top-2 right-2 p-1 rounded-full transition-all opacity-0 group-hover:opacity-100",
+                                alerts.some(a => a.type === item.type && !a.triggered) ? "text-red animate-pulse" : "text-muted hover:text-red"
+                              )}
+                              title="Set Price Alert"
+                            >
+                              <Zap size={12} />
+                            </button>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -720,23 +760,23 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef, i
 
             <div className="space-y-3">
               {signals.map(s => (
-                <div key={s.id} className="group bg-s1 border border-border2 rounded-sm p-5 px-8 grid grid-cols-[100px_120px_1fr_auto] gap-8 items-center hover:bg-s2 transition-all shadow-md hover:shadow-xl">
+                <div key={s.id} className="group bg-s1 border border-border2 rounded-sm p-5 px-6 sm:px-8 flex flex-col sm:grid sm:grid-cols-[100px_120px_1fr_auto] gap-4 sm:gap-8 items-start sm:items-center hover:bg-s2 transition-all shadow-md hover:shadow-xl">
                   <span className={cn(
-                    "font-mono text-[10px] font-black px-3 py-1 rounded-sm tracking-[0.2em] text-center border uppercase",
+                    "font-mono text-[10px] font-black px-3 py-1 rounded-sm tracking-[0.2em] text-center border uppercase w-full sm:w-auto",
                     s.status === 'TAKEN' ? "text-lime border-lime/30 bg-lime/5" : s.status === 'SKIPPED' ? "text-muted border-border2 bg-white/5" : "text-red border-red/30 bg-red/5"
                   )}>
                     {s.status === 'active' ? 'LIVE' : s.status}
                   </span>
-                  <div className="flex flex-col">
+                  <div className="flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-0">
                     <span className="font-mono text-[15px] font-black text-text tracking-tight">{s.pair}</span>
                     <span className={cn("font-mono text-[9px] font-black tracking-[0.3em] uppercase", s.direction === 'LONG' ? "text-lime" : "text-red")}>
                       {s.direction}
                     </span>
                   </div>
-                  <span className="font-mono text-[11px] text-sub truncate pr-12 opacity-70 group-hover:opacity-100 transition-opacity uppercase tracking-wider italic">
+                  <span className="font-mono text-[11px] text-sub truncate w-full sm:pr-12 opacity-70 group-hover:opacity-100 transition-opacity uppercase tracking-wider italic">
                     {s.reasoning || 'No technical reasoning provided.'}
                   </span>
-                  <div className="flex flex-col items-end">
+                  <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-2">
                     <span className="font-mono text-[11px] text-text font-bold">{new Date(s.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     <span className="font-mono text-[8px] text-muted uppercase tracking-widest font-bold">{s.source}</span>
                   </div>
@@ -752,10 +792,6 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef, i
               <div className="flex items-center gap-3">
                 <Clock size={18} className="text-red" />
                 <span className="font-mono text-[12px] font-black text-text uppercase tracking-[0.2em]">Market Vitals</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className={cn("w-2 h-2 rounded-full shadow-lg", sessionInfo.color === 'text-lime' ? 'bg-lime shadow-lime/20' : 'bg-muted')}></div>
-                <span className="font-mono text-[10px] text-sub uppercase font-bold tracking-widest">{sessionInfo.name}</span>
               </div>
             </div>
 
@@ -773,7 +809,7 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef, i
                 },
                 { 
                   label: 'Volatility (ATR)', 
-                  val: engineState?.atr.toFixed(4) || '—',
+                  val: engineState?.atr !== undefined ? engineState.atr.toFixed(4) : '—',
                   trend: prevState && engineState && Math.abs(engineState.atr - prevState.atr) > 0.0001
                     ? (engineState.atr > prevState.atr ? 'up' : 'down')
                     : null,
@@ -781,8 +817,8 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef, i
                   sparklineColor: (engineState?.atr || 0) > 0.005 ? 'text-red' : 'text-lime'
                 },
                 { 
-                  label: 'S/D Zones', 
-                  val: `${engineState?.mtf.activeZones} Active`,
+                  label: 'Active S/D Zones', 
+                  val: engineRef.current?.getZones(engineState?.symbol as any).slice(-2).map((z: any) => `${z.type === 'DEMAND' ? 'Demand' : 'Supply'}: ${z.high !== undefined ? z.high.toFixed(engineState?.symbol?.includes('JPY') ? 3 : 5) : '—'}`).join(' | ') || 'None',
                   trend: prevState && engineState && engineState.mtf.activeZones !== prevState.mtf.activeZones
                     ? (engineState.mtf.activeZones > prevState.mtf.activeZones ? 'up' : 'down')
                     : null,
@@ -790,7 +826,7 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef, i
                   sparklineColor: 'text-blue-400'
                 },
                 { 
-                  label: 'HTF Trend', 
+                  label: `${engineMode === TradeMode.SWING ? '1D' : engineMode === TradeMode.DAY ? '4H' : '15M'} Trend`, 
                   val: engineState?.htf.trend, 
                   color: engineState?.htf.trend === Trend.BULL ? 'text-lime' : 'text-red',
                   trend: prevState && engineState && engineState.htf.trend !== prevState.htf.trend
@@ -798,10 +834,10 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef, i
                     : null
                 },
                 { 
-                  label: 'MTF Trend', 
+                  label: `${engineMode === TradeMode.SWING ? '4H' : engineMode === TradeMode.DAY ? '15M' : '5M'} Trend`, 
                   val: engineState?.mtf.trend, 
                   color: engineState?.mtf.trend === Trend.BULL ? 'text-lime' : 'text-red',
-                  trend: prevState && engineState && engineState.htf.trend !== prevState.htf.trend
+                  trend: prevState && engineState && engineState.mtf.trend !== prevState.mtf.trend
                     ? (engineState.mtf.trend === Trend.BULL ? 'up' : 'down')
                     : null
                 }
@@ -825,7 +861,7 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef, i
                 <span className="font-mono text-[9px] text-muted uppercase tracking-[0.3em] font-bold">Scanner Load</span>
                 <div className="flex gap-1.5">
                   {['BTC', 'ETH', 'XAU', 'GBP', 'EUR'].map(s => (
-                    <div key={s} className={cn("w-1.5 h-4 rounded-full shadow-sm", engineState?.symbol.includes(s) ? 'bg-red shadow-red/20' : 'bg-border2')}></div>
+                    <div key={s} className={cn("w-1.5 h-4 rounded-full shadow-sm", engineState?.symbol?.includes(s) ? 'bg-red shadow-red/20' : 'bg-border2')}></div>
                   ))}
                 </div>
               </div>
@@ -1005,11 +1041,11 @@ function RulesPage({ customRules, onRulesUpdate }: { customRules: CustomRule[], 
         <p className="text-[12px] text-sub mb-7 font-mono">Your step-by-step flowchart and rules for execution</p>
       </div>
 
-      <div className="flex flex-col items-center max-w-[640px] w-full relative py-4">
+      <div className="flex flex-col items-center max-w-[640px] w-full relative py-4 mx-auto">
         {allRules.map((r, i) => (
           <div key={r.id} className="flex flex-col items-center w-full group">
-            <div className="relative w-full bg-s1 border border-border rounded-md p-5 transition-all hover:border-red/50 hover:shadow-[0_0_15px_rgba(255,68,68,0.1)] z-10">
-              <div className="absolute -left-3 -top-3 w-6 h-6 bg-red text-white rounded-full flex items-center justify-center font-mono text-[10px] font-bold border-2 border-bg">
+            <div className="relative w-full bg-s1 border border-border rounded-md p-5 pt-6 transition-all hover:border-red/50 hover:shadow-[0_0_15px_rgba(255,68,68,0.1)] z-10">
+              <div className="absolute left-1/2 -top-3 -translate-x-1/2 w-6 h-6 bg-red text-white rounded-full flex items-center justify-center font-mono text-[10px] font-bold border-2 border-bg">
                 {i + 1}
               </div>
               

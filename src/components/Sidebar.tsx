@@ -32,7 +32,7 @@ export default function Sidebar({ activePage, onPageChange, isOpen, onClose, has
         ></div>
       )}
       <nav className={cn(
-        "fixed lg:sticky top-16 left-0 w-[240px] h-[calc(100vh-64px)] bg-black border-r-2 border-border2 py-6 z-[100] transition-transform duration-300 ease-in-out overflow-y-auto shadow-[10px_0_30px_rgba(0,0,0,0.5)]",
+        "fixed lg:sticky top-0 lg:top-[80px] left-0 w-[240px] h-full lg:h-[calc(100vh-80px)] bg-black border-r-2 border-border2 py-6 z-[100] transition-transform duration-300 ease-in-out overflow-y-auto shadow-[10px_0_30px_rgba(0,0,0,0.5)]",
         !isOpen && "-translate-x-full lg:translate-x-0",
         isOpen && "translate-x-0"
       )}>

@@ -65,7 +65,7 @@ export class TradingEngine {
     };
   }
 
-  private getTimeframes() {
+  public getTimeframes() {
     if (this.mode === TradeMode.SWING) return { htf: '1d', mtf: '4h', ltf: '1h' };
     if (this.mode === TradeMode.DAY) return { htf: '4h', mtf: '15m', ltf: '5m' };
     return { htf: '15m', mtf: '5m', ltf: '1m' };
@@ -120,6 +120,7 @@ export class TradingEngine {
   }
 
   public async reSync() {
+    this.isInitializing = false; // Reset to allow init again
     // Close all WS and re-init
     Object.values(this.wsConnections).forEach(ws => ws.close());
     this.wsConnections = {};
@@ -137,7 +138,7 @@ export class TradingEngine {
     ];
 
     const symbolMap: Record<string, string> = {
-      'GBPJPY': 'GBPUSDT', // Proxy
+      'GBPJPY': 'GBPUSDT',
       'BTCUSD': 'BTCUSDT',
       'EURUSD': 'EURUSDT',
       'XAUUSD': 'PAXGUSDT'
@@ -155,13 +156,16 @@ export class TradingEngine {
         }
         
         const data = await response.json();
-        this.data[symbol][tf] = data.map((d: any) => ({
-          time: d[0],
-          open: parseFloat(d[1]),
-          high: parseFloat(d[2]),
-          low: parseFloat(d[3]),
-          close: parseFloat(d[4]),
-        }));
+        this.data[symbol][tf] = data.map((d: any) => {
+          const closePrice = symbol === 'GBPJPY' ? parseFloat(d[4]) * 150.7 : parseFloat(d[4]);
+          return {
+            time: d[0],
+            open: symbol === 'GBPJPY' ? parseFloat(d[1]) * 150.7 : parseFloat(d[1]),
+            high: symbol === 'GBPJPY' ? parseFloat(d[2]) * 150.7 : parseFloat(d[2]),
+            low: symbol === 'GBPJPY' ? parseFloat(d[3]) * 150.7 : parseFloat(d[3]),
+            close: closePrice,
+          };
+        });
 
         if (tf === this.getTimeframes().mtf) {
           this.currentPrices[symbol] = this.data[symbol][tf][this.data[symbol][tf].length - 1].close;
@@ -197,17 +201,25 @@ export class TradingEngine {
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
         const k = data.k;
+        let closePrice = parseFloat(k.c);
+        if (symbol === 'GBPJPY') {
+          closePrice = closePrice * 150.7; // Mock GBPJPY price using GBPUSDT base
+        }
+
         const candle: Candlestick = {
           time: k.t,
-          open: parseFloat(k.o),
-          high: parseFloat(k.h),
-          low: parseFloat(k.l),
-          close: parseFloat(k.c),
+          open: symbol === 'GBPJPY' ? parseFloat(k.o) * 151.5 : parseFloat(k.o),
+          high: symbol === 'GBPJPY' ? parseFloat(k.h) * 151.5 : parseFloat(k.h),
+          low: symbol === 'GBPJPY' ? parseFloat(k.l) * 151.5 : parseFloat(k.l),
+          close: closePrice,
         };
         this.currentPrices[symbol] = candle.close;
         const lastIndex = this.data[symbol][mtf]?.findIndex(c => c.time === candle.time) ?? -1;
         if (lastIndex !== -1) {
           this.data[symbol][mtf][lastIndex] = candle;
+          if (this.states[symbol]) {
+            this.states[symbol].mtf.price = candle.close;
+          }
         } else {
           if (!this.data[symbol][mtf]) this.data[symbol][mtf] = [];
           this.data[symbol][mtf].push(candle);

@@ -127,17 +127,7 @@ export default function Dashboard({ trades, onUpdate }: { trades: Trade[], onUpd
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Aggressive Banner */}
-      <div className="bg-red text-black font-display text-[24px] md:text-[32px] uppercase tracking-tighter p-4 flex items-center justify-between shadow-[0_0_30px_rgba(255,0,0,0.4)] animate-thriller">
-        <div className="flex items-center gap-4">
-          <AlertTriangle size={32} className="animate-pulse" />
-          <span>SYSTEM STATUS: CRITICAL // EXECUTION ONLY</span>
-        </div>
-        <div className="hidden md:block font-mono text-[12px] tracking-[0.5em] font-bold">
-          KILL GREED.
-        </div>
-      </div>
-
+      {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-black border-2 border-border2 p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:border-red transition-colors">
           <div className="absolute top-0 left-0 w-full h-1 bg-red/50 group-hover:bg-red transition-colors"></div>

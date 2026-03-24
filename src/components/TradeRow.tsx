@@ -136,7 +136,7 @@ export default function TradeRow({ trade, onUpdate }: TradeRowProps) {
               "font-display text-[32px] font-black tracking-tighter leading-none",
               trade.profit >= 0 ? "text-lime drop-shadow-[0_0_10px_rgba(200,255,0,0.4)]" : "text-red drop-shadow-[0_0_10px_rgba(255,0,0,0.4)]"
             )}>
-              {trade.profit >= 0 ? '+' : ''}{trade.profit.toFixed(2)}
+              {trade.profit >= 0 ? '+' : ''}{(trade.profit || 0).toFixed(2)}
             </span>
             <span className="font-mono text-[8px] text-muted uppercase tracking-widest mt-1">Net Profit</span>
           </div>

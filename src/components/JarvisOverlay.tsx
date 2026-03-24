@@ -101,8 +101,19 @@ export default function JarvisOverlay({ onComplete }: { onComplete: () => void }
       </div>
 
       {/* Background Glitch Elements */}
-      <div className="absolute bottom-10 right-10 font-mono text-[10px] text-red/30 uppercase tracking-[0.3em] animate-pulse">
-        System Status: Critical // Neural Engine Online
+      <div className="absolute bottom-10 right-10 flex flex-col items-end gap-4">
+        <button 
+          onClick={() => {
+            setVisible(false);
+            onComplete();
+          }}
+          className="px-6 py-2 bg-red/10 border border-red/40 text-red font-mono text-[10px] uppercase tracking-[0.3em] hover:bg-red hover:text-black transition-all"
+        >
+          Skip Initialization
+        </button>
+        <div className="font-mono text-[10px] text-red/30 uppercase tracking-[0.3em] animate-pulse">
+          Neural Engine Online
+        </div>
       </div>
     </div>
   );
