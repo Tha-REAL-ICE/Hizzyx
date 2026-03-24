@@ -82,49 +82,49 @@ export default function TradeRow({ trade, onUpdate }: TradeRowProps) {
     <div className="flex flex-col group/row">
       <div 
         className={cn(
-          "bg-s1 border border-border rounded-sm p-5 px-6 grid grid-cols-[auto_1fr_auto] gap-6 items-center cursor-pointer transition-all hover:bg-s2 relative overflow-hidden",
-          isOpen ? "border-lime/30 bg-lime/[0.02] shadow-[0_0_25px_rgba(163,230,53,0.05)]" : "hover:border-sub",
-          open ? "border-sub bg-s2/30" : ""
+          "bg-black border-2 border-border2 p-5 px-6 grid grid-cols-[auto_1fr_auto] gap-6 items-center cursor-pointer transition-all hover:bg-s1 relative overflow-hidden",
+          isOpen ? "border-lime/50 bg-lime/5 shadow-[0_0_20px_rgba(200,255,0,0.15)]" : "hover:border-red/50",
+          open ? "border-red/30 bg-s1" : ""
         )}
         onClick={() => setOpen(!open)}
       >
         {isOpen && (
-          <div className="absolute top-0 left-0 w-[2px] h-full bg-lime animate-pulse"></div>
+          <div className="absolute top-0 left-0 w-1 h-full bg-lime animate-pulse shadow-[0_0_10px_rgba(200,255,0,0.8)]"></div>
         )}
         
         <div className={cn(
-          "font-display text-[16px] font-bold w-[60px] text-center py-2 rounded-sm tracking-[0.2em] shadow-sm transition-all group-hover/row:scale-105",
-          isOpen && "text-lime bg-lime/10 animate-pulse border border-lime/40",
-          isWin && "text-lime bg-lime/10 border border-lime/20",
-          isLoss && "text-red bg-red/10 border border-red/20",
-          !isWin && !isLoss && !isOpen && "text-blue bg-blue/10 border border-blue/20"
+          "font-display text-[18px] font-black w-[70px] text-center py-2 tracking-[0.2em] transition-all group-hover/row:scale-105 uppercase",
+          isOpen && "text-lime bg-lime/10 animate-pulse border-2 border-lime/50 shadow-[0_0_10px_rgba(200,255,0,0.3)]",
+          isWin && "text-lime bg-lime/10 border-2 border-lime/30",
+          isLoss && "text-red bg-red/10 border-2 border-red/30",
+          !isWin && !isLoss && !isOpen && "text-blue bg-blue/10 border-2 border-blue/30"
         )}>
           {isOpen ? 'LIVE' : trade.outcome}
         </div>
 
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-4">
-            <span className="font-display text-[20px] font-bold text-text tracking-tight group-hover/row:text-red transition-colors leading-none">{trade.pair}</span>
-            <div className="flex items-center gap-2 px-2 py-0.5 bg-s2 border border-border rounded-sm">
-              <span className={cn("font-mono text-[10px] font-bold tracking-widest uppercase", trade.direction === 'LONG' ? "text-lime" : "text-red")}>
+            <span className="font-display text-[24px] font-black text-white tracking-widest group-hover/row:text-red transition-colors leading-none drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">{trade.pair}</span>
+            <div className="flex items-center gap-2 px-2 py-0.5 bg-black border-2 border-border2">
+              <span className={cn("font-mono text-[11px] font-bold tracking-[0.3em] uppercase", trade.direction === 'LONG' ? "text-lime drop-shadow-[0_0_5px_rgba(200,255,0,0.5)]" : "text-red drop-shadow-[0_0_5px_rgba(255,0,0,0.5)]")}>
                 {trade.direction}
               </span>
             </div>
             <span className="font-mono text-[10px] text-muted uppercase tracking-[0.3em] hidden sm:inline">{trade.session || 'GLOBAL'}</span>
           </div>
-          <div className="font-mono text-[9px] text-muted flex gap-4 items-center">
+          <div className="font-mono text-[10px] text-muted flex gap-4 items-center font-bold">
             <div className="flex items-center gap-1.5">
-              <div className={cn("w-1 h-1 rounded-full", trade.rules_followed === 'yes' ? "bg-lime" : "bg-red")}></div>
-              <span className="uppercase tracking-widest">Rules</span>
+              <div className={cn("w-2 h-2", trade.rules_followed === 'yes' ? "bg-lime shadow-[0_0_5px_rgba(200,255,0,0.5)]" : "bg-red shadow-[0_0_5px_rgba(255,0,0,0.5)]")}></div>
+              <span className="uppercase tracking-[0.2em] text-white">Rules</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className={cn("w-1 h-1 rounded-full", trade.htf === 'Confirmed' ? "bg-lime" : "bg-red")}></div>
-              <span className="uppercase tracking-widest">HTF</span>
+              <div className={cn("w-2 h-2", trade.htf === 'Confirmed' ? "bg-lime shadow-[0_0_5px_rgba(200,255,0,0.5)]" : "bg-red shadow-[0_0_5px_rgba(255,0,0,0.5)]")}></div>
+              <span className="uppercase tracking-[0.2em] text-white">HTF</span>
             </div>
             {trade.rr && (
               <div className="flex items-center gap-1.5">
-                <div className="w-1 h-1 bg-muted/30 rounded-full"></div>
-                R:R {trade.rr}
+                <div className="w-2 h-2 bg-muted/50"></div>
+                <span className="uppercase tracking-[0.2em] text-white">R:R {trade.rr}</span>
               </div>
             )}
           </div>
@@ -133,8 +133,8 @@ export default function TradeRow({ trade, onUpdate }: TradeRowProps) {
         <div className="flex items-center gap-8">
           <div className="flex flex-col items-end">
             <span className={cn(
-              "font-display text-[24px] font-bold tracking-tighter leading-none",
-              trade.profit >= 0 ? "text-lime" : "text-red"
+              "font-display text-[32px] font-black tracking-tighter leading-none",
+              trade.profit >= 0 ? "text-lime drop-shadow-[0_0_10px_rgba(200,255,0,0.4)]" : "text-red drop-shadow-[0_0_10px_rgba(255,0,0,0.4)]"
             )}>
               {trade.profit >= 0 ? '+' : ''}{trade.profit.toFixed(2)}
             </span>

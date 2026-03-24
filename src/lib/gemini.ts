@@ -2,6 +2,9 @@ import { GoogleGenAI } from "@google/genai";
 import { Trade, Signal, CustomRule } from "../types";
 
 const apiKey = process.env.GEMINI_API_KEY || "";
+if (!apiKey) {
+  console.warn("GEMINI_API_KEY is not defined. AI features will not work.");
+}
 export const ai = new GoogleGenAI({ apiKey });
 
 export const SYSTEM_INSTRUCTION = `You are the Hunchology AI — trading psychology coach for HX (Huncho), ICT/SMC trader.
@@ -26,8 +29,8 @@ EMOS: ${trade.emotions?.join(',') || '—'}
 ${trade.notes ? `NOTES: ${trade.notes}` : ''}`;
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
+    model: "gemini-3.1-pro-preview",
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
     config: { systemInstruction: SYSTEM_INSTRUCTION }
   });
 
@@ -49,8 +52,8 @@ Provide a "Jarvis Verdict". Is this a high-quality setup or a potential trap? Be
 Format: Line1: VERDICT: [HIGH QUALITY/CAUTION/AVOID]. Blank line. 3 sentences of analysis.`;
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
+    model: "gemini-3.1-pro-preview",
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
     config: { systemInstruction: SYSTEM_INSTRUCTION }
   });
 

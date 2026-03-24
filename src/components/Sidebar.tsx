@@ -27,37 +27,40 @@ export default function Sidebar({ activePage, onPageChange, isOpen, onClose, has
     <>
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/70 z-[99] lg:hidden"
+          className="fixed inset-0 bg-black/90 z-[99] lg:hidden backdrop-blur-sm"
           onClick={onClose}
         ></div>
       )}
       <nav className={cn(
-        "fixed lg:sticky top-16 left-0 w-[220px] h-[calc(100vh-64px)] bg-s1 border-r border-border2 py-6 z-[100] transition-transform duration-300 ease-in-out overflow-y-auto",
+        "fixed lg:sticky top-16 left-0 w-[240px] h-[calc(100vh-64px)] bg-black border-r-2 border-border2 py-6 z-[100] transition-transform duration-300 ease-in-out overflow-y-auto shadow-[10px_0_30px_rgba(0,0,0,0.5)]",
         !isOpen && "-translate-x-full lg:translate-x-0",
         isOpen && "translate-x-0"
       )}>
         <div className="px-4 mb-10">
-          <div className="flex items-center justify-between mb-4 px-2">
-            <div className="font-mono text-[9px] text-muted tracking-[0.3em] uppercase font-bold">Navigation</div>
+          <div className="flex items-center justify-between mb-6 px-2">
+            <div className="font-mono text-[10px] text-muted tracking-[0.4em] uppercase font-black">Navigation</div>
             <div className="flex gap-1">
-              <div className="w-1 h-1 bg-red rounded-full animate-pulse"></div>
-              <div className="w-1 h-1 bg-red/30 rounded-full"></div>
+              <div className="w-1.5 h-1.5 bg-red animate-pulse shadow-[0_0_5px_rgba(255,0,0,0.8)]"></div>
+              <div className="w-1.5 h-1.5 bg-red/30"></div>
             </div>
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => { onPageChange(item.id); onClose(); }}
                 className={cn(
-                  "flex items-center gap-3 p-3 px-4 rounded-sm cursor-pointer text-[11px] font-mono tracking-widest transition-all border-none bg-none w-full text-left uppercase group",
-                  activePage === item.id ? "bg-red/10 text-red border-l-2 border-l-red" : "text-sub hover:bg-s2 hover:text-text"
+                  "flex items-center gap-4 p-3 px-4 cursor-pointer text-[12px] font-mono tracking-widest transition-all border-none bg-none w-full text-left uppercase group relative overflow-hidden",
+                  activePage === item.id ? "bg-red/10 text-white border-l-4 border-l-red shadow-[inset_0_0_20px_rgba(255,0,0,0.1)]" : "text-sub hover:bg-s1 hover:text-white border-l-4 border-transparent hover:border-l-red/50"
                 )}
               >
-                <span className={cn("w-5 flex justify-center transition-transform group-hover:scale-110", activePage === item.id ? "text-red" : "text-muted")}>{item.icon}</span>
-                {item.label}
+                {activePage === item.id && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-red/10 to-transparent pointer-events-none"></div>
+                )}
+                <span className={cn("w-5 flex justify-center transition-transform group-hover:scale-110", activePage === item.id ? "text-red drop-shadow-[0_0_5px_rgba(255,0,0,0.5)]" : "text-muted")}>{item.icon}</span>
+                <span className="font-bold">{item.label}</span>
                 {item.id === 'signals' && hasLiveSignal && (
-                  <span className="bg-red text-black font-mono text-[7px] font-black px-1.5 py-0.5 rounded-full ml-auto flex items-center gap-1 animate-pulse">
+                  <span className="bg-red text-black font-mono text-[8px] font-black px-2 py-0.5 ml-auto flex items-center gap-1 animate-pulse shadow-[0_0_10px_rgba(255,0,0,0.5)]">
                     LIVE
                   </span>
                 )}
@@ -67,21 +70,21 @@ export default function Sidebar({ activePage, onPageChange, isOpen, onClose, has
         </div>
 
         <div className="px-4">
-          <div className="font-mono text-[9px] text-muted tracking-[0.3em] uppercase mb-4 px-2 font-bold">Neural Core</div>
-          <div className="p-5 border border-border2 rounded-sm bg-black relative overflow-hidden group shadow-inner">
-            <div className="absolute top-0 left-0 w-full h-[1px] bg-red/30 animate-[scanLine_3s_linear_infinite]"></div>
-            <div className="space-y-6">
+          <div className="font-mono text-[10px] text-muted tracking-[0.4em] uppercase mb-4 px-2 font-black">Neural Core</div>
+          <div className="p-5 border-2 border-border2 bg-black relative overflow-hidden group shadow-[inset_0_0_30px_rgba(0,0,0,0.8)]">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-red/50 animate-[scanLine_2s_linear_infinite] shadow-[0_0_10px_rgba(255,0,0,0.5)]"></div>
+            <div className="space-y-6 relative z-10">
               <div className="flex flex-col gap-2">
-                <span className="text-[9px] text-red uppercase tracking-widest font-black">Attraction</span>
-                <p className="text-[11px] text-sub leading-relaxed italic font-medium">Focus pulls reality.</p>
+                <span className="text-[10px] text-red uppercase tracking-[0.3em] font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">Attraction</span>
+                <p className="text-[12px] text-white leading-relaxed font-mono font-bold">Focus pulls reality.</p>
               </div>
               <div className="flex flex-col gap-2">
-                <span className="text-[9px] text-red uppercase tracking-widest font-black">Compensation</span>
-                <p className="text-[11px] text-sub leading-relaxed italic font-medium">Effort equals reward.</p>
+                <span className="text-[10px] text-red uppercase tracking-[0.3em] font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">Compensation</span>
+                <p className="text-[12px] text-white leading-relaxed font-mono font-bold">Effort equals reward.</p>
               </div>
               <div className="flex flex-col gap-2">
-                <span className="text-[9px] text-red uppercase tracking-widest font-black">Action</span>
-                <p className="text-[11px] text-sub leading-relaxed italic font-medium">Act on intuition.</p>
+                <span className="text-[10px] text-red uppercase tracking-[0.3em] font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">Action</span>
+                <p className="text-[12px] text-white leading-relaxed font-mono font-bold">Act on intuition.</p>
               </div>
             </div>
           </div>

@@ -148,45 +148,45 @@ export default function LogTrade({ onTradeLogged }: { onTradeLogged: () => void 
   };
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-5">
+    <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6">
       <div>
-        <div className="flex items-center gap-3 mb-4">
-          <div className="flex bg-s1 border border-border rounded-sm p-1">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex bg-black border-2 border-border2 p-1 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]">
             <button 
               onClick={() => { setMode('ANALYZE'); setAiResult(null); }}
-              className={cn("px-4 py-1.5 font-mono text-[10px] font-bold tracking-widest uppercase rounded-sm transition-all", mode === 'ANALYZE' ? "bg-red text-white" : "text-sub hover:text-text")}
+              className={cn("px-6 py-2 font-mono text-[11px] font-black tracking-[0.2em] uppercase transition-all", mode === 'ANALYZE' ? "bg-red text-black shadow-[0_0_15px_rgba(255,0,0,0.6)]" : "text-muted hover:text-white hover:bg-s1")}
             >
               Analyze Idea
             </button>
             <button 
               onClick={() => { setMode('LOG'); setAiResult(null); }}
-              className={cn("px-4 py-1.5 font-mono text-[10px] font-bold tracking-widest uppercase rounded-sm transition-all", mode === 'LOG' ? "bg-red text-white" : "text-sub hover:text-text")}
+              className={cn("px-6 py-2 font-mono text-[11px] font-black tracking-[0.2em] uppercase transition-all", mode === 'LOG' ? "bg-red text-black shadow-[0_0_15px_rgba(255,0,0,0.6)]" : "text-muted hover:text-white hover:bg-s1")}
             >
               Log Execution
             </button>
           </div>
-          <div className="flex-1 h-[1px] bg-border"></div>
+          <div className="flex-1 h-[2px] bg-border2"></div>
         </div>
         
-        <div className="bg-s1 border border-border rounded-sm p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 mb-3.5">
-            <div className="flex flex-col gap-1.5">
-              <label className="font-mono text-[8px] uppercase tracking-[0.2em] text-sub">Pair</label>
-              <select value={pair} onChange={e => setPair(e.target.value)} className="bg-s2 border border-border text-text p-2.5 px-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-colors w-full">
+        <div className="bg-black border-2 border-border2 p-8 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="flex flex-col gap-2">
+              <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-red font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">Pair</label>
+              <select value={pair} onChange={e => setPair(e.target.value)} className="bg-s1 border-2 border-border2 text-white p-3 px-4 font-mono text-[14px] font-bold outline-none focus:border-red transition-colors w-full shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]">
                 <option value="">Select</option>
                 <option>XAUUSD</option><option>BTCUSD</option><option>GBPJPY</option><option>EURUSD</option><option>GBPUSD</option><option>USDJPY</option><option>NASDAQ</option><option>US30</option>
               </select>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="font-mono text-[8px] uppercase tracking-[0.2em] text-sub">Direction</label>
-              <select value={direction} onChange={e => setDirection(e.target.value as any)} className="bg-s2 border border-border text-text p-2.5 px-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-colors w-full">
+            <div className="flex flex-col gap-2">
+              <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-red font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">Direction</label>
+              <select value={direction} onChange={e => setDirection(e.target.value as any)} className="bg-s1 border-2 border-border2 text-white p-3 px-4 font-mono text-[14px] font-bold outline-none focus:border-red transition-colors w-full shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]">
                 <option value="">Select</option>
                 <option value="LONG">LONG</option><option value="SHORT">SHORT</option>
               </select>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="font-mono text-[8px] uppercase tracking-[0.2em] text-sub">Session</label>
-              <select value={session} onChange={e => setSession(e.target.value)} className="bg-s2 border border-border text-text p-2.5 px-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-colors w-full">
+            <div className="flex flex-col gap-2">
+              <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-red font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">Session</label>
+              <select value={session} onChange={e => setSession(e.target.value)} className="bg-s1 border-2 border-border2 text-white p-3 px-4 font-mono text-[14px] font-bold outline-none focus:border-red transition-colors w-full shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]">
                 <option value="">Select</option>
                 <option>London</option><option>New York</option><option>Asia</option><option>LDN/NY Overlap</option><option>Pre-Market</option>
               </select>
@@ -195,67 +195,67 @@ export default function LogTrade({ onTradeLogged }: { onTradeLogged: () => void 
 
           {mode === 'ANALYZE' ? (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 mb-3.5">
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-mono text-[8px] uppercase tracking-[0.2em] text-sub">Entry Price</label>
-                  <input type="number" step="0.00001" value={entryPrice} onChange={e => setEntryPrice(e.target.value)} className="bg-s2 border border-border text-text p-2.5 px-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-colors w-full" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="flex flex-col gap-2">
+                  <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-red font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">Entry Price</label>
+                  <input type="number" step="0.00001" value={entryPrice} onChange={e => setEntryPrice(e.target.value)} className="bg-s1 border-2 border-border2 text-white p-3 px-4 font-mono text-[14px] font-bold outline-none focus:border-red transition-colors w-full shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]" />
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-mono text-[8px] uppercase tracking-[0.2em] text-sub">Stop Loss</label>
-                  <input type="number" step="0.00001" value={sl} onChange={e => setSl(e.target.value)} className="bg-s2 border border-border text-text p-2.5 px-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-colors w-full" />
+                <div className="flex flex-col gap-2">
+                  <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-red font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">Stop Loss</label>
+                  <input type="number" step="0.00001" value={sl} onChange={e => setSl(e.target.value)} className="bg-s1 border-2 border-border2 text-white p-3 px-4 font-mono text-[14px] font-bold outline-none focus:border-red transition-colors w-full shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]" />
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-mono text-[8px] uppercase tracking-[0.2em] text-sub">Take Profit</label>
-                  <input type="number" step="0.00001" value={tp} onChange={e => setTp(e.target.value)} className="bg-s2 border border-border text-text p-2.5 px-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-colors w-full" />
+                <div className="flex flex-col gap-2">
+                  <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-red font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">Take Profit</label>
+                  <input type="number" step="0.00001" value={tp} onChange={e => setTp(e.target.value)} className="bg-s1 border-2 border-border2 text-white p-3 px-4 font-mono text-[14px] font-bold outline-none focus:border-red transition-colors w-full shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]" />
                 </div>
               </div>
-              <div className="flex flex-col gap-1.5 mb-3.5">
-                <label className="font-mono text-[8px] uppercase tracking-[0.2em] text-sub">Technical Reasoning</label>
-                <textarea value={reasoning} onChange={e => setReasoning(e.target.value)} className="bg-s2 border border-border text-text p-2.5 px-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-colors w-full min-h-[100px] leading-relaxed" placeholder="e.g. Swept BSL on M15, IDM formed, M5 BOS into OB, CHoCH confirmation..." />
+              <div className="flex flex-col gap-2 mb-6">
+                <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-red font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">Technical Reasoning</label>
+                <textarea value={reasoning} onChange={e => setReasoning(e.target.value)} className="bg-s1 border-2 border-border2 text-white p-4 px-5 font-mono text-[14px] font-bold outline-none focus:border-red transition-colors w-full min-h-[120px] leading-relaxed shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]" placeholder="e.g. Swept BSL on M15, IDM formed, M5 BOS into OB, CHoCH confirmation..." />
               </div>
               <button 
                 onClick={handleAnalyze}
                 disabled={loading}
-                className="w-full p-3.5 bg-red text-white border-none font-mono text-[11px] font-bold tracking-[0.2em] uppercase cursor-pointer rounded-sm mt-[18px] transition-all hover:bg-[#ff5555] hover:-translate-y-0.5 disabled:opacity-35 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full p-4 bg-red text-black border-2 border-red font-mono text-[14px] font-black tracking-[0.3em] uppercase cursor-pointer mt-6 transition-all hover:bg-black hover:text-red hover:shadow-[0_0_20px_rgba(255,0,0,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Running Neural Audit...' : 'Run Neural Audit →'}
+                {loading ? 'RUNNING NEURAL AUDIT...' : 'RUN NEURAL AUDIT'}
               </button>
             </>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-3.5">
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-mono text-[8px] uppercase tracking-[0.2em] text-sub">R:R Ratio</label>
-                  <input type="text" value={rr} onChange={e => setRr(e.target.value)} className="bg-s2 border border-border text-text p-2.5 px-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-colors w-full" placeholder="e.g. 1:3" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="flex flex-col gap-2">
+                  <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-red font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">R:R Ratio</label>
+                  <input type="text" value={rr} onChange={e => setRr(e.target.value)} className="bg-s1 border-2 border-border2 text-white p-3 px-4 font-mono text-[14px] font-bold outline-none focus:border-red transition-colors w-full shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]" placeholder="e.g. 1:3" />
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-mono text-[8px] uppercase tracking-[0.2em] text-sub">Profit (R)</label>
-                  <input type="number" value={profit} onChange={e => setProfit(e.target.value)} className="bg-s2 border border-border text-text p-2.5 px-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-colors w-full" placeholder="e.g. 3 or -1" step="0.1" />
+                <div className="flex flex-col gap-2">
+                  <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-red font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">Profit (R)</label>
+                  <input type="number" value={profit} onChange={e => setProfit(e.target.value)} className="bg-s1 border-2 border-border2 text-white p-3 px-4 font-mono text-[14px] font-bold outline-none focus:border-red transition-colors w-full shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]" placeholder="e.g. 3 or -1" step="0.1" />
                 </div>
               </div>
 
-              <div className="flex flex-col gap-1.5 mb-3.5">
-                <label className="font-mono text-[8px] uppercase tracking-[0.2em] text-sub">HTF Bias & Reasoning</label>
-                <textarea value={htf} onChange={e => setHtf(e.target.value)} className="bg-s2 border border-border text-text p-2.5 px-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-colors w-full min-h-[72px] leading-relaxed" placeholder="e.g. Bearish on H4 — BOS confirmed, price below OB, targeting liquidity..." />
+              <div className="flex flex-col gap-2 mb-6">
+                <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-red font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">HTF Bias & Reasoning</label>
+                <textarea value={htf} onChange={e => setHtf(e.target.value)} className="bg-s1 border-2 border-border2 text-white p-4 px-5 font-mono text-[14px] font-bold outline-none focus:border-red transition-colors w-full min-h-[100px] leading-relaxed shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]" placeholder="e.g. Bearish on H4 — BOS confirmed, price below OB, targeting liquidity..." />
               </div>
 
-              <div className="flex flex-col gap-1.5 mb-3.5">
-                <label className="font-mono text-[8px] uppercase tracking-[0.2em] text-sub">LTF Entry Reasoning</label>
-                <textarea value={entry} onChange={e => setEntry(e.target.value)} className="bg-s2 border border-border text-text p-2.5 px-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-colors w-full min-h-[72px] leading-relaxed" placeholder="e.g. Swept BSL on M15, IDM formed, M5 BOS into OB, CHoCH confirmation..." />
+              <div className="flex flex-col gap-2 mb-6">
+                <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-red font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">LTF Entry Reasoning</label>
+                <textarea value={entry} onChange={e => setEntry(e.target.value)} className="bg-s1 border-2 border-border2 text-white p-4 px-5 font-mono text-[14px] font-bold outline-none focus:border-red transition-colors w-full min-h-[100px] leading-relaxed shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]" placeholder="e.g. Swept BSL on M15, IDM formed, M5 BOS into OB, CHoCH confirmation..." />
               </div>
 
-              <div className="flex flex-col gap-1.5 mb-3.5">
-                <label className="font-mono text-[8px] uppercase tracking-[0.2em] text-sub">Outcome</label>
-                <div className="flex gap-2 flex-wrap">
+              <div className="flex flex-col gap-2 mb-6">
+                <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-red font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">Outcome</label>
+                <div className="flex gap-3 flex-wrap">
                   {(['WIN', 'LOSS', 'BE'] as Outcome[]).map(o => (
                     <button
                       key={o}
                       onClick={() => setOutcome(o)}
                       className={cn(
-                        "px-3.5 py-1.5 bg-s2 border border-border text-sub font-mono text-[10px] rounded-full cursor-pointer transition-all tracking-wider",
-                        outcome === o && o === 'WIN' && "border-lime text-lime bg-lime/10",
-                        outcome === o && o === 'LOSS' && "border-red text-red bg-red/10",
-                        outcome === o && o === 'BE' && "border-blue text-blue bg-blue/10"
+                        "px-4 py-2 bg-s1 border-2 border-border2 text-muted font-mono text-[11px] font-bold uppercase cursor-pointer transition-all tracking-[0.2em]",
+                        outcome === o && o === 'WIN' && "border-lime text-lime bg-lime/10 shadow-[0_0_10px_rgba(200,255,0,0.3)]",
+                        outcome === o && o === 'LOSS' && "border-red text-red bg-red/10 shadow-[0_0_10px_rgba(255,0,0,0.3)]",
+                        outcome === o && o === 'BE' && "border-blue text-blue bg-blue/10 shadow-[0_0_10px_rgba(0,100,255,0.3)]"
                       )}
                     >
                       {o === 'BE' ? 'BREAKEVEN' : o}
@@ -264,9 +264,9 @@ export default function LogTrade({ onTradeLogged }: { onTradeLogged: () => void 
                 </div>
               </div>
 
-              <div className="flex flex-col gap-1.5 mb-3.5">
-                <label className="font-mono text-[8px] uppercase tracking-[0.2em] text-sub">Did you follow your rules?</label>
-                <select value={rulesFollowed} onChange={e => setRulesFollowed(e.target.value as any)} className="bg-s2 border border-border text-text p-2.5 px-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-colors w-full">
+              <div className="flex flex-col gap-2 mb-6">
+                <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-red font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">Did you follow your rules?</label>
+                <select value={rulesFollowed} onChange={e => setRulesFollowed(e.target.value as any)} className="bg-s1 border-2 border-border2 text-white p-3 px-4 font-mono text-[14px] font-bold outline-none focus:border-red transition-colors w-full shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]">
                   <option value="">Select</option>
                   <option value="yes">Yes — full checklist</option>
                   <option value="partial">Partial — missed something</option>
@@ -275,22 +275,22 @@ export default function LogTrade({ onTradeLogged }: { onTradeLogged: () => void 
               </div>
 
               {(rulesFollowed === 'partial' || rulesFollowed === 'no') && (
-                <div className="flex flex-col gap-1.5 mb-3.5">
-                  <label className="font-mono text-[8px] uppercase tracking-[0.2em] text-sub">What rule did you break?</label>
-                  <textarea value={breach} onChange={e => setBreach(e.target.value)} className="bg-s2 border border-border text-text p-2.5 px-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-colors w-full min-h-[72px] leading-relaxed" placeholder="e.g. Moved SL too early..." />
+                <div className="flex flex-col gap-2 mb-6">
+                  <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-red font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">What rule did you break?</label>
+                  <textarea value={breach} onChange={e => setBreach(e.target.value)} className="bg-s1 border-2 border-border2 text-white p-4 px-5 font-mono text-[14px] font-bold outline-none focus:border-red transition-colors w-full min-h-[100px] leading-relaxed shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]" placeholder="e.g. Moved SL too early..." />
                 </div>
               )}
 
-              <div className="flex flex-col gap-1.5 mb-3.5">
-                <label className="font-mono text-[8px] uppercase tracking-[0.2em] text-sub">Emotional state</label>
-                <div className="flex gap-2 flex-wrap">
+              <div className="flex flex-col gap-2 mb-6">
+                <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-red font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">Emotional state</label>
+                <div className="flex gap-3 flex-wrap">
                   {emotionOptions.map(emo => (
                     <button
                       key={emo}
                       onClick={() => toggleEmotion(emo)}
                       className={cn(
-                        "px-3.5 py-1.5 bg-s2 border border-border text-sub font-mono text-[10px] rounded-full cursor-pointer transition-all tracking-wider",
-                        emotions.includes(emo) && "border-gold text-gold bg-gold/10"
+                        "px-4 py-2 bg-s1 border-2 border-border2 text-muted font-mono text-[11px] font-bold uppercase cursor-pointer transition-all tracking-[0.2em]",
+                        emotions.includes(emo) && "border-gold text-gold bg-gold/10 shadow-[0_0_10px_rgba(255,200,0,0.3)]"
                       )}
                     >
                       {emo}
@@ -299,17 +299,17 @@ export default function LogTrade({ onTradeLogged }: { onTradeLogged: () => void 
                 </div>
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <label className="font-mono text-[8px] uppercase tracking-[0.2em] text-sub">Extra notes</label>
-                <textarea value={notes} onChange={e => setNotes(e.target.value)} className="bg-s2 border border-border text-text p-2.5 px-3 font-mono text-[12px] rounded-sm outline-none focus:border-red transition-colors w-full min-h-[72px] leading-relaxed" placeholder="Anything else..." />
+              <div className="flex flex-col gap-2">
+                <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-red font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)]">Extra notes</label>
+                <textarea value={notes} onChange={e => setNotes(e.target.value)} className="bg-s1 border-2 border-border2 text-white p-4 px-5 font-mono text-[14px] font-bold outline-none focus:border-red transition-colors w-full min-h-[100px] leading-relaxed shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]" placeholder="Anything else..." />
               </div>
 
               <button 
                 onClick={submitTrade}
                 disabled={loading}
-                className="w-full p-3.5 bg-red text-white border-none font-mono text-[11px] font-bold tracking-[0.2em] uppercase cursor-pointer rounded-sm mt-[18px] transition-all hover:bg-[#ff5555] hover:-translate-y-0.5 disabled:opacity-35 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full p-4 bg-red text-black border-2 border-red font-mono text-[14px] font-black tracking-[0.3em] uppercase cursor-pointer mt-6 transition-all hover:bg-black hover:text-red hover:shadow-[0_0_20px_rgba(255,0,0,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Logging & Analyzing...' : 'Log Execution & Analyze →'}
+                {loading ? 'LOGGING & ANALYZING...' : 'LOG EXECUTION & ANALYZE'}
               </button>
             </>
           )}
@@ -317,46 +317,48 @@ export default function LogTrade({ onTradeLogged }: { onTradeLogged: () => void 
       </div>
 
       <div>
-        <div className="flex items-center gap-3 mb-4">
-          <span className="font-mono text-[9px] text-sub uppercase tracking-[0.25em] whitespace-nowrap">AI Feedback</span>
-          <div className="flex-1 h-[1px] bg-border"></div>
+        <div className="flex items-center gap-4 mb-6">
+          <span className="font-mono text-[10px] text-red uppercase tracking-[0.4em] font-black drop-shadow-[0_0_2px_rgba(255,0,0,0.5)] whitespace-nowrap">AI Feedback</span>
+          <div className="flex-1 h-[2px] bg-border2"></div>
         </div>
         
-        <div className="bg-s1 border border-border rounded-sm p-5 flex flex-col gap-4 min-h-[300px]">
+        <div className="bg-black border-2 border-border2 p-6 flex flex-col gap-6 min-h-[400px] shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-red/30 animate-[scanLine_4s_linear_infinite]"></div>
+          
           {!loading && !aiResult && (
-            <div className="flex flex-col items-center justify-center flex-1 text-center gap-3">
-              <div className="w-[52px] h-[52px] border border-border2 rounded-full flex items-center justify-center text-[22px]">⚡</div>
-              <p className="font-mono text-[10px] text-muted leading-relaxed max-w-[200px]">
+            <div className="flex flex-col items-center justify-center flex-1 text-center gap-4">
+              <div className="w-16 h-16 border-2 border-border2 flex items-center justify-center text-3xl shadow-[0_0_15px_rgba(255,0,0,0.1)]">⚡</div>
+              <p className="font-mono text-[11px] text-muted leading-relaxed max-w-[250px] uppercase tracking-[0.2em] font-bold">
                 {mode === 'ANALYZE' ? 'Analyze a potential trade idea against your rules before executing.' : 'Log a trade and get honest feedback based on your Hunchology framework.'}
               </p>
             </div>
           )}
 
           {loading && (
-            <div className="flex flex-col gap-2.5 min-h-[80px] justify-center">
-              <div className="h-[1px] bg-border rounded-sm overflow-hidden">
-                <div className="h-full bg-red animate-[sweep_1.4s_ease-in-out_infinite] rounded-sm"></div>
+            <div className="flex flex-col gap-4 min-h-[100px] justify-center items-center">
+              <div className="w-full h-[2px] bg-border2 overflow-hidden relative">
+                <div className="absolute top-0 left-0 h-full bg-red animate-[sweep_1s_ease-in-out_infinite] w-1/3 shadow-[0_0_10px_rgba(255,0,0,0.8)]"></div>
               </div>
-              <div className="font-mono text-[9px] text-sub tracking-wider text-center">Analyzing against your rules...</div>
+              <div className="font-mono text-[10px] text-red tracking-[0.4em] font-black animate-pulse">ANALYZING NEURAL PATHWAYS...</div>
             </div>
           )}
 
           {aiResult && (
-            <div className="block">
+            <div className="block relative z-10">
               <div className={cn(
-                "inline-block px-2.5 py-1 rounded-sm font-mono text-[8px] font-bold tracking-[0.25em] uppercase mb-3 border",
-                aiResult.type === 'good' && "bg-lime/10 text-lime border-lime/30",
-                aiResult.type === 'warn' && "bg-gold/10 text-gold border-gold/30",
-                aiResult.type === 'bad' && "bg-red/10 text-red border-red/30"
+                "inline-block px-4 py-2 font-mono text-[10px] font-black tracking-[0.3em] uppercase mb-6 border-2 shadow-[0_0_15px_currentColor]",
+                aiResult.type === 'good' && "bg-lime/10 text-lime border-lime/50",
+                aiResult.type === 'warn' && "bg-gold/10 text-gold border-gold/50",
+                aiResult.type === 'bad' && "bg-red/10 text-red border-red/50"
               )}>
                 {aiResult.feedback.split('\n')[0]}
               </div>
-              <div className="text-[12px] leading-relaxed text-[#ccc] whitespace-pre-wrap font-sans">
+              <div className="text-[14px] leading-relaxed text-white whitespace-pre-wrap font-mono">
                 {aiResult.feedback.split('\n').slice(2).join('\n').trim()}
               </div>
-              <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-border">
+              <div className="flex flex-wrap gap-2 mt-6 pt-6 border-t-2 border-border2">
                 {[pair, direction, mode === 'LOG' ? outcome : 'IDEA', session, ...emotions].filter(Boolean).map(c => (
-                  <span key={c} className="px-2.5 py-1 border border-border2 rounded-full font-mono text-[8px] text-sub tracking-wider">{c}</span>
+                  <span key={c} className="px-3 py-1.5 bg-s1 border-2 border-border2 font-mono text-[9px] text-white font-bold uppercase tracking-[0.2em] shadow-[0_0_5px_rgba(0,0,0,0.5)]">{c}</span>
                 ))}
               </div>
             </div>

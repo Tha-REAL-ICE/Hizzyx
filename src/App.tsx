@@ -82,7 +82,10 @@ export default function App() {
 
         const { data, error } = await supabase.from('signals').insert(newSignal).select().single();
         if (!error && data) {
-          setSignals(prev => [data as Signal, ...prev]);
+          setSignals(prev => {
+            if (prev.some(s => s.id === data.id)) return prev;
+            return [data as Signal, ...prev];
+          });
         }
       };
 
@@ -122,7 +125,10 @@ export default function App() {
   const subscribeSignals = () => {
     const channel = supabase.channel('signals-rt')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'signals' }, payload => {
-        setSignals(prev => [payload.new as Signal, ...prev]);
+        setSignals(prev => {
+          if (prev.some(s => s.id === payload.new.id)) return prev;
+          return [payload.new as Signal, ...prev];
+        });
       })
       .subscribe();
     return channel;
@@ -168,55 +174,55 @@ export default function App() {
       {!jarvisDone && <JarvisOverlay onComplete={handleJarvisComplete} />}
 
       <div className={cn("flex flex-col h-screen overflow-hidden", !jarvisDone && "invisible")}>
-        <header className="flex-none border-b border-border2 bg-black/90 backdrop-blur-xl z-[200]">
-          <div className="h-14 px-4 lg:px-8 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4 min-w-0">
+        <header className="flex-none border-b-2 border-border2 bg-black z-[200] shadow-[0_5px_30px_rgba(0,0,0,0.8)]">
+          <div className="h-16 px-4 lg:px-8 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-6 min-w-0">
               <button 
-                className="lg:hidden p-2 bg-s2 border border-border2 text-text hover:bg-red hover:text-black transition-colors shrink-0"
+                className="lg:hidden p-2 bg-black border-2 border-border2 text-white hover:bg-red hover:border-red transition-colors shrink-0 shadow-[0_0_10px_rgba(255,0,0,0.2)]"
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               >
-                {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
+                {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
-              <div className="flex items-center gap-3 group cursor-pointer" onClick={() => setActivePage('dashboard')}>
-                <div className="w-8 h-8 bg-red flex items-center justify-center rounded-sm shadow-[0_0_15px_rgba(255,61,61,0.3)] group-hover:scale-105 transition-transform">
-                  <BrainCircuit className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-4 group cursor-pointer" onClick={() => setActivePage('dashboard')}>
+                <div className="w-10 h-10 bg-red flex items-center justify-center shadow-[0_0_20px_rgba(255,0,0,0.6)] group-hover:scale-110 transition-transform border-2 border-red/50">
+                  <BrainCircuit className="w-6 h-6 text-black" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-display text-lg tracking-tighter text-white leading-none">HUNCHOLOGY</span>
-                  <span className="font-mono text-[9px] text-red tracking-[0.2em] font-bold">NEURAL CORE v12</span>
+                  <span className="font-display text-2xl font-black tracking-tighter text-white leading-none drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">HUNCHOLOGY</span>
+                  <span className="font-mono text-[10px] text-red tracking-[0.4em] font-black uppercase drop-shadow-[0_0_2px_rgba(255,0,0,0.8)]">NEURAL CORE v12</span>
                 </div>
               </div>
 
-              <div className="hidden md:flex items-center gap-6 border-l border-border2 pl-6">
+              <div className="hidden md:flex items-center gap-8 border-l-2 border-border2 pl-8 ml-4">
                 <div className="flex flex-col">
-                  <span className="font-mono text-[9px] text-muted uppercase tracking-widest">Win Rate</span>
-                  <span className="font-mono text-sm text-lime font-bold">{stats.wr}</span>
+                  <span className="font-mono text-[10px] text-muted uppercase tracking-[0.3em] font-bold">Win Rate</span>
+                  <span className="font-mono text-lg text-lime font-black drop-shadow-[0_0_5px_rgba(200,255,0,0.5)]">{stats.wr}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-mono text-[9px] text-muted uppercase tracking-widest">Discipline</span>
-                  <span className="font-mono text-sm text-blue font-bold">{stats.dr}</span>
+                  <span className="font-mono text-[10px] text-muted uppercase tracking-[0.3em] font-bold">Discipline</span>
+                  <span className="font-mono text-lg text-blue font-black drop-shadow-[0_0_5px_rgba(0,100,255,0.5)]">{stats.dr}</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 shrink-0">
-              <div className="hidden lg:flex items-center gap-1.5 bg-s1 border border-border px-3 py-1.5 rounded-sm">
-                <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", isSyncing ? "bg-gold" : "bg-lime")} />
-                <span className="font-mono text-[10px] text-text uppercase tracking-wider">
-                  {isSyncing ? 'Syncing...' : 'Engine Online'}
+            <div className="flex items-center gap-6 shrink-0">
+              <div className="hidden lg:flex items-center gap-2 bg-black border-2 border-border2 px-4 py-2 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]">
+                <div className={cn("w-2 h-2 animate-pulse shadow-[0_0_10px_currentColor]", isSyncing ? "bg-gold text-gold" : "bg-lime text-lime")} />
+                <span className="font-mono text-[11px] text-white font-bold uppercase tracking-[0.2em]">
+                  {isSyncing ? 'SYNCING...' : 'ENGINE ONLINE'}
                 </span>
               </div>
 
-              <div className="flex items-center bg-s1 border border-border p-0.5 rounded-sm">
+              <div className="flex items-center bg-black border-2 border-border2 p-1 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]">
                 {(Object.values(TradeMode) as TradeMode[]).map((m) => (
                   <button
                     key={m}
                     onClick={() => setEngineMode(m)}
                     className={cn(
-                      "px-3 py-1 font-mono text-[10px] font-bold tracking-widest uppercase transition-all rounded-sm",
+                      "px-4 py-1.5 font-mono text-[11px] font-black tracking-[0.2em] uppercase transition-all",
                       engineMode === m 
-                        ? "bg-red text-white shadow-[0_0_10px_rgba(255,61,61,0.2)]" 
-                        : "text-muted hover:text-text"
+                        ? "bg-red text-black shadow-[0_0_15px_rgba(255,0,0,0.6)]" 
+                        : "text-muted hover:text-white hover:bg-s1"
                     )}
                   >
                     {m}
@@ -224,17 +230,17 @@ export default function App() {
                 ))}
               </div>
 
-              <div className="flex items-center gap-2 border-l border-border2 pl-3 ml-1">
+              <div className="flex items-center gap-4 border-l-2 border-border2 pl-6 ml-2">
                 <div className="hidden sm:flex flex-col items-end">
-                  <span className="font-mono text-[10px] text-text font-bold lowercase tracking-tight">@{user?.email?.split('@')[0]}</span>
-                  <span className="font-mono text-[8px] text-muted uppercase tracking-widest">Operator</span>
+                  <span className="font-mono text-[12px] text-white font-bold lowercase tracking-widest">{user?.email?.split('@')[0]}</span>
+                  <span className="font-mono text-[9px] text-red uppercase tracking-[0.3em] font-black">Operator</span>
                 </div>
                 <button 
                   onClick={() => supabase.auth.signOut()}
-                  className="p-2 text-muted hover:text-red transition-colors"
+                  className="p-2.5 bg-black border-2 border-border2 text-muted hover:text-red hover:border-red transition-colors shadow-[0_0_10px_rgba(0,0,0,0.5)] hover:shadow-[0_0_15px_rgba(255,0,0,0.4)]"
                   title="Disconnect"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -874,8 +880,8 @@ function AnalyticsPage({ trades }: { trades: Trade[] }) {
     const sum = trades.map(t => `${t.pair} ${t.direction}|${t.outcome}|Rules:${t.rules_followed}|Emos:${(t.emotions || []).join(',') || 'none'}|Session:${t.session || '—'}`).join('\n');
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `Analyze ${trades.length} trades for patterns. 4-6 specific insights on emotional patterns, rule breaches, pair performance, session performance.\n\n${sum}`,
+        model: "gemini-3.1-pro-preview",
+        contents: [{ role: 'user', parts: [{ text: `Analyze ${trades.length} trades for patterns. 4-6 specific insights on emotional patterns, rule breaches, pair performance, session performance.\n\n${sum}` }] }],
         config: { systemInstruction: SYSTEM_INSTRUCTION }
       });
       setAnalysis(response.text || '');
