@@ -1,9 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 import { Trade, Signal, CustomRule } from "../types";
 
-const apiKey = process.env.GEMINI_API_KEY || "";
+export const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || "";
 if (!apiKey) {
-  console.warn("GEMINI_API_KEY is not defined. AI features will not work.");
+  console.warn("GEMINI_API_KEY or API_KEY is not defined. AI features will not work.");
 }
 export const ai = new GoogleGenAI({ apiKey });
 
@@ -17,7 +17,7 @@ Format: Line1: DISCIPLINED / WARNING / RULE BREACH. Blank line. 3-5 sentences of
 
 export async function analyzeTrade(trade: Partial<Trade>) {
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is missing. Please add your Gemini API Key to the Secrets panel or .env file to activate the AI.");
+    throw new Error("API Key is missing. Please add your Gemini API Key to the Secrets panel as API_KEY to activate the AI.");
   }
   const prompt = `Trade:
 PAIR: ${trade.pair} ${trade.direction}
@@ -43,7 +43,7 @@ ${trade.notes ? `NOTES: ${trade.notes}` : ''}`;
 
 export async function auditSignal(signal: Partial<Signal>, rules: string[]) {
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is missing. Please add your Gemini API Key to the Secrets panel or .env file to activate the AI.");
+    throw new Error("API Key is missing. Please add your Gemini API Key to the Secrets panel as API_KEY to activate the AI.");
   }
   const prompt = `Audit this Trading Signal against my rules:
 SIGNAL: ${signal.pair} ${signal.direction}

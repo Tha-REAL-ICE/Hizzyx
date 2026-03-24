@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ai } from '../lib/gemini';
+import { ai, apiKey } from '../lib/gemini';
 import { MarketState } from '../types';
 import { Send, Terminal, User, Activity } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -34,6 +34,10 @@ export default function MarketAnalyst({ engineStates }: { engineStates: Record<s
     setLoading(true);
 
     try {
+      if (!apiKey) {
+        throw new Error("API Key is missing. Please add your Gemini API Key to the Secrets panel as API_KEY to activate HIZZYX.");
+      }
+
       const systemInstruction = `You are HIZZYX, an expert SMC/ICT trading AI core.
 You have access to the current real-time state of the Trading Engine.
 Current Engine State (JSON):
@@ -60,7 +64,8 @@ Be concise, highly analytical, and use an aggressive, tech-geeky, terminal-like 
       setMessages(prev => [...prev, { role: 'model', content: response.text || 'ERR: NO RESPONSE FROM NEURAL NET.' }]);
     } catch (e) {
       console.error(e);
-      setMessages(prev => [...prev, { role: 'model', content: 'ERR: CONNECTION TO NEURAL CORE FAILED. RETRY INITIATED.' }]);
+      const errMsg = e instanceof Error ? e.message : 'UNKNOWN ERROR';
+      setMessages(prev => [...prev, { role: 'model', content: `ERR: CONNECTION TO NEURAL CORE FAILED.\nDETAILS: ${errMsg}` }]);
     } finally {
       setLoading(false);
     }
