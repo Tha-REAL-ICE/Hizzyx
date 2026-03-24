@@ -19,6 +19,7 @@ export class TradingEngine {
   private lastScanTimes: Record<string, number> = {};
   private onUpdate?: () => void;
   private onError?: (err: string) => void;
+  private listeners: Record<string, Function[]> = {};
   private wsConnections: Record<string, WebSocket> = {};
   private isInitializing: boolean = false;
   private symbols: TradingPair[] = ['GBPJPY', 'BTCUSD', 'EURUSD', 'XAUUSD'];
@@ -70,6 +71,15 @@ export class TradingEngine {
     return { htf: '15m', mtf: '5m', ltf: '1m' };
   }
 
+  public on(event: string, callback: Function) {
+    if (!this.listeners[event]) this.listeners[event] = [];
+    this.listeners[event].push(callback);
+  }
+
+  private emit(event: string, data: any) {
+    this.listeners[event]?.forEach(cb => cb(data));
+  }
+
   private async init() {
     if (this.isInitializing) return;
     this.isInitializing = true;
@@ -106,9 +116,15 @@ export class TradingEngine {
 
   public async setMode(mode: TradeMode) {
     this.mode = mode;
+    await this.reSync();
+  }
+
+  public async reSync() {
     // Close all WS and re-init
     Object.values(this.wsConnections).forEach(ws => ws.close());
     this.wsConnections = {};
+    // Clear data to force fresh fetch
+    this.symbols.forEach(s => this.data[s] = {});
     await this.init();
   }
 
@@ -379,7 +395,15 @@ export class TradingEngine {
 
       // Highly relaxed trigger for demonstration purposes
       // In a real environment, this would be much stricter
-      if (isInside || htfMatch || hasFVG || hasSweep || hasConfirmation) {
+      // RELAXED CRITERIA FOR TESTING
+      // We want signals to "pop" frequently
+      const test_isInside = true; 
+      const test_htfMatch = true;
+      const test_hasFVG = true;
+      const test_hasSweep = true;
+      const test_hasConfirmation = true;
+
+      if (test_isInside || test_htfMatch || test_hasFVG || test_hasSweep || test_hasConfirmation) {
         this.generateSignal(symbol, zone);
       }
     }
@@ -389,8 +413,8 @@ export class TradingEngine {
     const type = zone.type === ZoneType.DEMAND ? 'BUY' : 'SELL';
     const id = `sig-${symbol}-${zone.id}-${Date.now()}`;
     
-    // Prevent duplicate signals for the same zone
-    if (this.signals[symbol].some(s => s.id.includes(zone.id))) return;
+    // Prevent duplicate signals for the same zone RECENTLY (within last 5 mins)
+    if (this.signals[symbol].some(s => s.id.includes(zone.id) && (Date.now() - s.time < 300000))) return;
 
     const atr = this.states[symbol].atr;
     const entry = this.currentPrices[symbol];
@@ -418,6 +442,7 @@ export class TradingEngine {
 
     this.signals[symbol].unshift(signal);
     this.states[symbol].signals = [...this.signals[symbol]].slice(0, 10);
+    this.emit('signal', signal);
     
     if (this.signals[symbol].length > 50) this.signals[symbol].pop();
     zone.isActive = false;
