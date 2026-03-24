@@ -76,7 +76,7 @@ export default function LogTrade({ onTradeLogged }: { onTradeLogged: () => void 
       setAiResult({ feedback, type });
     } catch (e) {
       console.error(e);
-      alert('Analysis failed');
+      alert(e instanceof Error ? e.message : 'Analysis failed');
     } finally {
       setLoading(false);
     }
@@ -141,7 +141,7 @@ export default function LogTrade({ onTradeLogged }: { onTradeLogged: () => void 
       onTradeLogged();
     } catch (e) {
       console.error(e);
-      alert('Failed to log trade');
+      alert(e instanceof Error ? e.message : 'Failed to log trade');
     } finally {
       setLoading(false);
     }

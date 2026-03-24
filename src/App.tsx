@@ -175,7 +175,7 @@ export default function App() {
 
       <div className={cn("flex flex-col h-screen overflow-hidden", !jarvisDone && "invisible")}>
         <header className="flex-none border-b-2 border-border2 bg-black z-[200] shadow-[0_5px_30px_rgba(0,0,0,0.8)]">
-          <div className="h-16 px-4 lg:px-8 flex items-center justify-between gap-4">
+          <div className="min-h-[80px] py-4 px-4 lg:px-8 flex flex-wrap items-center justify-between gap-6">
             <div className="flex items-center gap-6 min-w-0">
               <button 
                 className="lg:hidden p-2 bg-black border-2 border-border2 text-white hover:bg-red hover:border-red transition-colors shrink-0 shadow-[0_0_10px_rgba(255,0,0,0.2)]"
@@ -205,7 +205,7 @@ export default function App() {
               </div>
             </div>
 
-            <div className="flex items-center gap-6 shrink-0">
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6 shrink-0">
               <div className="hidden lg:flex items-center gap-2 bg-black border-2 border-border2 px-4 py-2 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]">
                 <div className={cn("w-2 h-2 animate-pulse shadow-[0_0_10px_currentColor]", isSyncing ? "bg-gold text-gold" : "bg-lime text-lime")} />
                 <span className="font-mono text-[11px] text-white font-bold uppercase tracking-[0.2em]">
@@ -213,13 +213,13 @@ export default function App() {
                 </span>
               </div>
 
-              <div className="flex items-center bg-black border-2 border-border2 p-1 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]">
+              <div className="flex items-center bg-black border-2 border-border2 p-1 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)] overflow-x-auto max-w-[full]">
                 {(Object.values(TradeMode) as TradeMode[]).map((m) => (
                   <button
                     key={m}
                     onClick={() => setEngineMode(m)}
                     className={cn(
-                      "px-4 py-1.5 font-mono text-[11px] font-black tracking-[0.2em] uppercase transition-all",
+                      "px-3 sm:px-4 py-1.5 font-mono text-[10px] sm:text-[11px] font-black tracking-[0.2em] uppercase transition-all whitespace-nowrap",
                       engineMode === m 
                         ? "bg-red text-black shadow-[0_0_15px_rgba(255,0,0,0.6)]" 
                         : "text-muted hover:text-white hover:bg-s1"
@@ -230,7 +230,7 @@ export default function App() {
                 ))}
               </div>
 
-              <div className="flex items-center gap-4 border-l-2 border-border2 pl-6 ml-2">
+              <div className="flex items-center gap-4 border-l-2 border-border2 pl-4 sm:pl-6 ml-0 sm:ml-2">
                 <div className="hidden sm:flex flex-col items-end">
                   <span className="font-mono text-[12px] text-white font-bold lowercase tracking-widest">{user?.email?.split('@')[0]}</span>
                   <span className="font-mono text-[9px] text-red uppercase tracking-[0.3em] font-black">Operator</span>
