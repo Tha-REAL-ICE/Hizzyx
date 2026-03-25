@@ -186,28 +186,29 @@ export default function App() {
   if (!user) return <AuthScreen />;
 
   return (
-    <div className="min-h-screen bg-bg text-text font-sans selection:bg-red/30">
+    <div className="min-h-screen bg-bg text-text font-sans selection:bg-red/30 overflow-x-hidden">
       <div className="grain"></div>
       <Toaster position="top-right" theme="dark" expand={true} richColors />
       {!jarvisDone && <JarvisOverlay onComplete={handleJarvisComplete} />}
 
-      <div className={cn("flex flex-col h-screen overflow-hidden", !jarvisDone && "invisible")}>
-        <header className="flex-none border-b-2 border-border2 bg-black z-[200] shadow-[0_5px_30px_rgba(0,0,0,0.8)]">
+      <div className={cn("flex flex-col h-[100dvh] overflow-hidden", !jarvisDone && "invisible")}>
+        <header className="flex-none border-b-2 border-border2 bg-black z-[200] shadow-[0_5px_30px_rgba(0,0,0,0.8)] sticky top-0">
           <div className="min-h-[60px] lg:min-h-[80px] py-2 lg:py-4 px-4 lg:px-8 flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 lg:gap-6 min-w-0">
               <button 
                 className="lg:hidden p-2 bg-black border-2 border-border2 text-white hover:bg-red hover:border-red transition-colors shrink-0 shadow-[0_0_10px_rgba(255,0,0,0.2)] z-[210]"
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                aria-label="Toggle Menu"
               >
                 {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
               </button>
-              <div className="flex items-center gap-3 lg:gap-4 group cursor-pointer" onClick={() => setActivePage('dashboard')}>
-                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-red flex items-center justify-center shadow-[0_0_20px_rgba(255,0,0,0.6)] group-hover:scale-110 transition-transform border-2 border-red/50">
-                  <BrainCircuit className="w-5 h-5 lg:w-6 lg:h-6 text-black" />
+              <div className="flex items-center gap-2 lg:gap-4 group cursor-pointer" onClick={() => setActivePage('dashboard')}>
+                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-red flex items-center justify-center shadow-[0_0_20px_rgba(255,0,0,0.6)] group-hover:scale-110 transition-transform border-2 border-red/50 shrink-0">
+                  <BrainCircuit className="w-4 h-4 lg:w-6 lg:h-6 text-black" />
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-display text-lg lg:text-2xl font-black tracking-tighter text-white leading-none drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">HUNCHOLOGY</span>
-                  <span className="font-mono text-[8px] lg:text-[10px] text-red tracking-[0.4em] font-black uppercase drop-shadow-[0_0_2px_rgba(255,0,0,0.8)]">NEURAL CORE</span>
+                <div className="flex flex-col min-w-0">
+                  <span className="font-display text-base lg:text-2xl font-black tracking-tighter text-white leading-none drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] truncate">HUNCHOLOGY</span>
+                  <span className="font-mono text-[7px] lg:text-[10px] text-red tracking-[0.4em] font-black uppercase drop-shadow-[0_0_2px_rgba(255,0,0,0.8)] truncate">NEURAL CORE</span>
                 </div>
               </div>
 
@@ -290,12 +291,15 @@ export default function App() {
             hasLiveSignal={signals.some(s => s.status === 'active')}
           />
           
-          <main className="flex-1 overflow-y-auto bg-bg relative custom-scrollbar flex flex-col">
+          <main className={cn(
+            "flex-1 bg-bg relative custom-scrollbar flex flex-col min-h-0",
+            activePage === 'analyst' ? "overflow-hidden" : "overflow-y-auto"
+          )}>
             <div className="absolute inset-0 pointer-events-none opacity-[0.02] z-0">
               <div className="h-full w-full bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:60px_60px]"></div>
             </div>
             <div className={cn(
-              "relative z-10 flex-1 flex flex-col",
+              "relative z-10 flex-1 flex flex-col min-h-0",
               activePage === 'analyst' ? "p-0" : "p-4 sm:p-6 lg:p-8"
             )}>
               {activePage === 'dashboard' && <Dashboard trades={trades} onUpdate={fetchData} />}
@@ -318,7 +322,7 @@ export default function App() {
                   engineMode={engineMode}
                 />
               )}
-              {activePage === 'analyst' && <MarketAnalyst engineStates={allEngineStates} />}
+              {activePage === 'analyst' && <MarketAnalyst engineStates={allEngineStates} onBack={() => setActivePage('dashboard')} />}
               {activePage === 'history' && (
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col">
@@ -529,20 +533,20 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, allEngineSta
   ) : 0;
 
   return (
-    <div className="flex flex-col gap-10 max-w-7xl mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+    <div className="flex flex-col gap-6 lg:gap-10 max-w-7xl mx-auto w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
         <div className="lg:col-span-4 flex flex-col gap-4">
           <div className="flex items-center gap-4">
-            <h1 className="font-display text-[48px] font-black tracking-tighter text-text leading-none uppercase">HIZZYX <span className="text-red">OS</span></h1>
+            <h1 className="font-display text-[32px] sm:text-[48px] font-black tracking-tighter text-text leading-none uppercase">HIZZYX <span className="text-red">OS</span></h1>
             <div className="flex items-center gap-2 px-3 py-1 bg-red/10 border border-red/40 rounded-sm shadow-[0_0_15px_rgba(255,61,61,0.1)]">
               <div className={cn("w-2 h-2 rounded-full shadow-lg", sessionInfo.color === 'text-lime' ? 'bg-lime shadow-lime/20 animate-pulse' : 'bg-muted')}></div>
-              <span className="font-mono text-[10px] text-red font-black tracking-[0.2em] uppercase">{sessionInfo.name} | {engineState?.symbol || 'AWAITING'}</span>
+              <span className="font-mono text-[9px] sm:text-[10px] text-red font-black tracking-[0.2em] uppercase truncate max-w-[100px] sm:max-w-none">{sessionInfo.name} | {engineState?.symbol || 'AWAITING'}</span>
             </div>
           </div>
-          <p className="text-[13px] text-sub font-mono tracking-[0.3em] uppercase border-l-4 border-red pl-6 py-2 bg-s1/30">Neural {engineMode.toUpperCase()} Confluence Engine</p>
+          <p className="text-[11px] sm:text-[13px] text-sub font-mono tracking-[0.3em] uppercase border-l-4 border-red pl-4 sm:pl-6 py-2 bg-s1/30">Neural {engineMode.toUpperCase()} Confluence Engine</p>
         </div>
 
-        <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {['GBPJPY', 'BTCUSD', 'EURUSD', 'XAUUSD'].map((s) => {
             const sState = engineRef.current?.getState(s as TradingPair);
             const isActive = engineState?.symbol === s;
@@ -585,52 +589,52 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, allEngineSta
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         <div className="lg:col-span-8 space-y-10">
           {active ? (
-            <div className="bg-s1 border border-border2 rounded-sm p-10 relative shadow-2xl overflow-hidden">
+            <div className="bg-s1 border border-border2 rounded-sm p-6 sm:p-10 relative shadow-2xl overflow-hidden">
               <div className="absolute top-0 left-0 w-1 h-full bg-red/50"></div>
-              <div className="flex flex-col md:flex-row justify-between gap-10 relative z-10">
-                <div className="flex-1">
-                  <div className="flex items-center gap-6 mb-8">
-                    <div className="flex flex-col">
-                      <span className="font-mono text-[11px] text-muted uppercase tracking-[0.3em] mb-2 font-bold">Active Asset</span>
-                      <h2 className="font-display text-[48px] font-black text-text leading-none tracking-tighter uppercase">{active.pair}</h2>
+              <div className="flex flex-col md:flex-row justify-between gap-6 lg:gap-10 relative z-10">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-4 sm:gap-6 mb-6 sm:mb-8">
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-mono text-[9px] sm:text-[11px] text-muted uppercase tracking-[0.3em] mb-2 font-bold truncate">Active Asset</span>
+                      <h2 className="font-display text-[32px] sm:text-[48px] font-black text-text leading-none tracking-tighter uppercase truncate">{active.pair}</h2>
                     </div>
                     <div className={cn(
-                      "mt-6 px-6 py-3 font-mono text-[14px] font-black tracking-[0.4em] rounded-sm border shadow-2xl uppercase",
+                      "mt-4 sm:mt-6 px-4 sm:px-6 py-2 sm:py-3 font-mono text-[12px] sm:text-[14px] font-black tracking-[0.4em] rounded-sm border shadow-2xl uppercase",
                       active.direction === 'LONG' ? "bg-lime/10 text-lime border-lime/40" : "bg-red/10 text-red border-red/40"
                     )}>
                       {active.direction}
                     </div>
                   </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-10">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-8 sm:mb-10">
                       {[
                         { label: 'Entry', val: active.entry_price, color: 'text-text', type: 'ENTRY' },
                         { label: 'Current', val: livePrice, color: pnl >= 0 ? 'text-lime' : 'text-red', type: 'CURRENT' },
                         { label: 'Stop Loss', val: active.stop_loss, color: 'text-red/80', type: 'SL' },
                         { label: 'Take Profit', val: active.take_profit, color: 'text-lime/80', type: 'TP' }
                       ].map((item, i) => (
-                        <div key={i} className="bg-black border border-border2 p-5 rounded-sm shadow-inner relative group">
-                          <span className="font-mono text-[9px] text-muted uppercase tracking-widest block mb-3 font-bold">{item.label}</span>
-                          <span className={cn("font-mono text-[20px] font-black tracking-tighter", item.color)}>
+                        <div key={i} className="bg-black border border-border2 p-3 sm:p-5 rounded-sm shadow-inner relative group min-w-0">
+                          <span className="font-mono text-[8px] sm:text-[9px] text-muted uppercase tracking-widest block mb-2 sm:mb-3 font-bold truncate">{item.label}</span>
+                          <span className={cn("font-mono text-[14px] sm:text-[20px] font-black tracking-tighter truncate block", item.color)}>
                             {typeof item.val === 'number' ? item.val.toLocaleString(undefined, { minimumFractionDigits: active.pair.includes('JPY') ? 3 : 2 }) : item.val || '—'}
                           </span>
                           {item.type !== 'CURRENT' && item.val && (
                             <button 
                               onClick={() => addAlert(item.type, parseFloat(item.val as string))}
                               className={cn(
-                                "absolute top-2 right-2 p-1 rounded-full transition-all opacity-0 group-hover:opacity-100",
+                                "absolute top-1 right-1 sm:top-2 sm:right-2 p-1 rounded-full transition-all opacity-0 group-hover:opacity-100",
                                 alerts.some(a => a.type === item.type && !a.triggered) ? "text-red animate-pulse" : "text-muted hover:text-red"
                               )}
                               title="Set Price Alert"
                             >
-                              <Zap size={12} />
+                              <Zap size={10} />
                             </button>
                           )}
                         </div>
                       ))}
                     </div>
 
-                    <div className="flex flex-wrap gap-4 mb-10">
+                    <div className="flex flex-wrap gap-2 sm:gap-4 mb-8 sm:mb-10">
                       {[
                         { label: 'HTF Trend', active: true, desc: 'Trend Alignment' },
                         { label: 'Liq Sweep', active: active.reasoning?.includes('Sweep') || true, desc: 'Liquidity Grab' },
@@ -638,81 +642,91 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, allEngineSta
                         { label: 'LTF CHoCH', active: true, desc: 'Structure Shift' }
                       ].map((c, i) => (
                         <div key={i} className={cn(
-                          "group/conf flex items-center gap-3 px-4 py-2 rounded-sm border font-mono text-[10px] font-black tracking-widest uppercase transition-all shadow-sm",
+                          "group/conf flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-1.5 sm:py-2 rounded-sm border font-mono text-[8px] sm:text-[10px] font-black tracking-widest uppercase transition-all shadow-sm",
                           c.active ? "bg-lime/5 border-lime/40 text-lime" : "bg-white/5 border-border2 text-muted"
                         )}>
-                          <div className={cn("w-1.5 h-1.5 rounded-full", c.active ? "bg-lime animate-pulse shadow-[0_0_8px_rgba(163,230,53,0.5)]" : "bg-muted")}></div>
+                          <div className={cn("w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full", c.active ? "bg-lime animate-pulse shadow-[0_0_8px_rgba(163,230,53,0.5)]" : "bg-muted")}></div>
                           <span>{c.label}</span>
-                          <span className="hidden group-hover/conf:inline text-[8px] opacity-50 ml-2 font-mono">— {c.desc}</span>
                         </div>
                       ))}
                     </div>
 
-                    <div className="bg-black border border-border2 p-6 rounded-sm shadow-inner">
-                      <div className="flex items-center gap-3 mb-4">
-                        <Search size={14} className="text-red" />
-                        <span className="font-mono text-[10px] text-sub uppercase tracking-[0.3em] font-bold">Technical Confluence</span>
+                    <div className="bg-black border border-border2 p-4 sm:p-6 rounded-sm shadow-inner">
+                      <div className="flex items-center gap-3 mb-3 sm:mb-4">
+                        <Search size={12} className="text-red" />
+                        <span className="font-mono text-[9px] sm:text-[10px] text-sub uppercase tracking-[0.3em] font-bold">Technical Confluence</span>
                       </div>
-                      <p className="font-mono text-[13px] text-sub leading-relaxed italic uppercase tracking-wider">
+                      <p className="font-mono text-[11px] sm:text-[13px] text-sub leading-relaxed italic uppercase tracking-wider">
                         {active.reasoning || "Analyzing market structure for optimal entry confirmation..."}
                       </p>
                     </div>
                   </div>
 
-                  <div className="w-full md:w-[300px] flex flex-col gap-6">
-                    <div className="p-8 bg-black border border-border2 rounded-sm shadow-xl">
-                      <div className="flex items-center justify-between mb-8">
-                        <span className="font-mono text-[11px] text-sub uppercase tracking-widest font-bold">Position Calc</span>
-                        <Zap size={16} className="text-gold" />
+                  <div className="w-full md:w-[260px] lg:w-[300px] flex flex-col gap-4 sm:gap-6">
+                    <div className="p-6 sm:p-8 bg-black border border-border2 rounded-sm shadow-xl">
+                      <div className="flex items-center justify-between mb-6 sm:mb-8">
+                        <span className="font-mono text-[10px] sm:text-[11px] text-sub uppercase tracking-widest font-bold">Position Calc</span>
+                        <Zap size={14} className="text-gold" />
                       </div>
-                      <div className="space-y-6 mb-8">
-                        <div className="flex flex-col gap-2">
-                          <label className="font-mono text-[9px] text-muted uppercase font-bold tracking-widest">Balance</label>
+                      <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
+                        <div className="flex flex-col gap-1.5 sm:gap-2">
+                          <label className="font-mono text-[8px] sm:text-[9px] text-muted uppercase font-bold tracking-widest">Balance</label>
                           <input 
                             type="number" 
                             value={balance} 
                             onChange={e => setBalance(e.target.value)}
-                            className="w-full bg-s1 border border-border2 text-text p-3 font-mono text-[13px] rounded-sm outline-none focus:border-red transition-all shadow-inner"
+                            className="w-full bg-s1 border border-border2 text-text p-2.5 sm:p-3 font-mono text-[12px] sm:text-[13px] rounded-sm outline-none focus:border-red transition-all shadow-inner"
                           />
                         </div>
-                        <div className="flex flex-col gap-2">
-                          <label className="font-mono text-[9px] text-muted uppercase font-bold tracking-widest">Risk %</label>
+                        <div className="flex flex-col gap-1.5 sm:gap-2">
+                          <label className="font-mono text-[8px] sm:text-[9px] text-muted uppercase font-bold tracking-widest">Risk %</label>
                           <input 
                             type="number" 
                             value={riskPct} 
                             onChange={e => setRiskPct(e.target.value)}
-                            className="w-full bg-s1 border border-border2 text-text p-3 font-mono text-[13px] rounded-sm outline-none focus:border-red transition-all shadow-inner"
+                            className="w-full bg-s1 border border-border2 text-text p-2.5 sm:p-3 font-mono text-[12px] sm:text-[13px] rounded-sm outline-none focus:border-red transition-all shadow-inner"
                           />
                         </div>
                       </div>
-                      <div className="pt-6 border-t border-border2 flex items-center justify-between">
-                        <span className="font-mono text-[12px] text-sub uppercase font-bold">Lots</span>
-                        <span className="font-mono text-[28px] font-black text-red tracking-tighter">{calculateLotSize()}</span>
+                      <div className="pt-4 sm:pt-6 border-t border-border2 flex items-center justify-between">
+                        <span className="font-mono text-[11px] sm:text-[12px] text-sub uppercase font-bold">Lots</span>
+                        <span className="font-mono text-[20px] sm:text-[28px] font-black text-red tracking-tighter">{calculateLotSize()}</span>
                       </div>
                       </div>
-                      <div className="p-8 bg-black border border-border2 rounded-sm relative overflow-hidden group/audit shadow-xl">
-                      <div className="absolute top-0 right-0 w-40 h-40 bg-red/5 blur-3xl -mr-20 -mt-20 transition-all group-hover/audit:bg-red/10"></div>
-                      <div className="flex items-center justify-between mb-8">
-                        <span className="font-mono text-[11px] text-sub uppercase tracking-widest font-bold">Neural Confidence</span>
-                        <Globe size={16} className="text-red animate-spin-slow" />
+                      <div className="p-6 sm:p-8 bg-black border border-border2 rounded-sm relative overflow-hidden group/audit shadow-xl">
+                      <div className="absolute top-0 right-0 w-32 h-32 sm:w-40 sm:h-40 bg-red/5 blur-3xl -mr-16 -mt-16 sm:-mr-20 sm:-mt-20 transition-all group-hover/audit:bg-red/10"></div>
+                      <div className="flex items-center justify-between mb-6 sm:mb-8">
+                        <span className="font-mono text-[10px] sm:text-[11px] text-sub uppercase tracking-widest font-bold">Neural Confidence</span>
+                        <Globe size={14} className="text-red animate-spin-slow" />
                       </div>
                       
-                      <div className="flex flex-col items-center gap-6 mb-8">
-                        <div className="relative w-40 h-40 flex items-center justify-center">
+                      <div className="flex flex-col items-center gap-4 sm:gap-6 mb-6 sm:mb-8">
+                        <div className="relative w-32 h-32 sm:w-40 sm:h-40 flex items-center justify-center">
                           <svg className="w-full h-full -rotate-90">
-                            <circle cx="80" cy="80" r="74" fill="none" stroke="currentColor" strokeWidth="1" className="text-border2/30" />
-                            <circle cx="80" cy="80" r="68" fill="none" stroke="currentColor" strokeWidth="4" className="text-border2" />
+                            <circle cx="64" cy="64" r="58" fill="none" stroke="currentColor" strokeWidth="1" className="text-border2/30 sm:hidden" />
+                            <circle cx="80" cy="80" r="74" fill="none" stroke="currentColor" strokeWidth="1" className="text-border2/30 hidden sm:block" />
+                            
+                            <circle cx="64" cy="64" r="54" fill="none" stroke="currentColor" strokeWidth="4" className="text-border2 sm:hidden" />
+                            <circle cx="80" cy="80" r="68" fill="none" stroke="currentColor" strokeWidth="4" className="text-border2 hidden sm:block" />
+                            
+                            <circle 
+                              cx="64" cy="64" r="54" fill="none" stroke="currentColor" strokeWidth="6" 
+                              strokeDasharray={339}
+                              strokeDashoffset={339 - (339 * (engineState?.mlConfidence || 0)) / 100}
+                              strokeLinecap="round"
+                              className={cn("transition-all duration-1000 sm:hidden", (engineState?.mlConfidence || 0) > 70 ? "text-lime shadow-[0_0_15px_rgba(163,230,53,0.4)]" : "text-red shadow-[0_0_15px_rgba(255,61,61,0.4)]")}
+                            />
                             <circle 
                               cx="80" cy="80" r="68" fill="none" stroke="currentColor" strokeWidth="8" 
                               strokeDasharray={427}
                               strokeDashoffset={427 - (427 * (engineState?.mlConfidence || 0)) / 100}
                               strokeLinecap="round"
-                              className={cn("transition-all duration-1000", (engineState?.mlConfidence || 0) > 70 ? "text-lime shadow-[0_0_20px_rgba(163,230,53,0.4)]" : "text-red shadow-[0_0_20px_rgba(255,61,61,0.4)]")}
+                              className={cn("transition-all duration-1000 hidden sm:block", (engineState?.mlConfidence || 0) > 70 ? "text-lime shadow-[0_0_20px_rgba(163,230,53,0.4)]" : "text-red shadow-[0_0_20px_rgba(255,61,61,0.4)]")}
                             />
                           </svg>
                           <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="font-display text-[32px] font-black leading-none tracking-tighter">{engineState?.mlConfidence || 0}%</span>
-                            <span className="font-mono text-[10px] text-muted uppercase mt-2 tracking-widest font-bold">Probability</span>
+                            <span className="font-display text-[24px] sm:text-[32px] font-black leading-none tracking-tighter">{engineState?.mlConfidence || 0}%</span>
+                            <span className="font-mono text-[8px] sm:text-[10px] text-muted uppercase mt-1 sm:mt-2 tracking-widest font-bold">Probability</span>
                           </div>
                         </div>
                       </div>
@@ -721,50 +735,50 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, allEngineSta
                         <button 
                           onClick={handleAudit}
                           disabled={auditing}
-                          className="w-full py-4 bg-s2 border border-border2 text-sub font-mono text-[11px] font-black tracking-[0.3em] uppercase rounded-sm hover:border-red hover:text-red transition-all flex items-center justify-center gap-3 shadow-lg"
+                          className="w-full py-3 sm:py-4 bg-s2 border border-border2 text-sub font-mono text-[10px] sm:text-[11px] font-black tracking-[0.3em] uppercase rounded-sm hover:border-red hover:text-red transition-all flex items-center justify-center gap-2 sm:gap-3 shadow-lg"
                         >
                           {auditing ? (
                             <>
-                              <div className="w-4 h-4 border-2 border-red/30 border-t-red rounded-full animate-spin"></div>
+                              <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-red/30 border-t-red rounded-full animate-spin"></div>
                               <span>Auditing...</span>
                             </>
                           ) : (
                             <>
-                              <BrainCircuit size={16} />
+                              <BrainCircuit size={14} />
                               <span>Neural Audit</span>
                             </>
                           )}
                         </button>
                       ) : (
-                        <div className="space-y-6 animate-[fadeUp_0.3s_ease_out]">
+                        <div className="space-y-4 sm:space-y-6 animate-[fadeUp_0.3s_ease_out]">
                           <div className={cn(
-                            "font-mono text-[14px] font-black px-4 py-3 rounded-sm text-center border shadow-2xl uppercase tracking-widest",
+                            "font-mono text-[12px] sm:text-[14px] font-black px-3 sm:px-4 py-2 sm:py-3 rounded-sm text-center border shadow-2xl uppercase tracking-widest",
                             auditResult.includes('HIGH QUALITY') ? 'bg-lime/10 text-lime border-lime/40 shadow-lime/5' : 
                             auditResult.includes('AVOID') ? 'bg-red/10 text-red border-red/40 shadow-red/5' : 'bg-gold/10 text-gold border-gold/40 shadow-gold/5'
                           )}>
                             {auditResult.split('\n')[0]}
                           </div>
-                          <div className="bg-s1/50 p-5 rounded-sm border border-border2 shadow-inner">
-                            <p className="font-mono text-[12px] text-sub leading-relaxed italic uppercase tracking-wider">
+                          <div className="bg-s1/50 p-4 sm:p-5 rounded-sm border border-border2 shadow-inner">
+                            <p className="font-mono text-[10px] sm:text-[12px] text-sub leading-relaxed italic uppercase tracking-wider">
                               {auditResult.split('\n').slice(2).join(' ')}
                             </p>
                           </div>
-                          <button onClick={() => setAuditResult(null)} className="w-full py-3 text-[11px] text-muted font-mono uppercase font-bold tracking-widest hover:text-red transition-colors border border-transparent hover:border-red/30 rounded-sm">Reset Audit</button>
+                          <button onClick={() => setAuditResult(null)} className="w-full py-2 sm:py-3 text-[9px] sm:text-[11px] text-muted font-mono uppercase font-bold tracking-widest hover:text-red transition-colors border border-transparent hover:border-red/30 rounded-sm">Reset Audit</button>
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-12 flex gap-6 relative z-10">
+                <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row gap-4 sm:gap-6 relative z-10">
                   <button 
-                    className="flex-1 py-5 bg-lime text-black font-mono text-[15px] font-black tracking-[0.4em] uppercase rounded-sm transition-all hover:scale-[1.01] active:scale-[0.98] shadow-2xl"
+                    className="flex-1 py-4 sm:py-5 bg-lime text-black font-mono text-[13px] sm:text-[15px] font-black tracking-[0.4em] uppercase rounded-sm transition-all hover:scale-[1.01] active:scale-[0.98] shadow-2xl"
                     onClick={() => actSignal(active.id, 'TAKEN')}
                   >
                     Execute Command
                   </button>
                   <button 
-                    className="px-12 py-5 bg-transparent border border-border2 text-sub font-mono text-[15px] font-black tracking-[0.4em] uppercase rounded-sm transition-all hover:border-red hover:text-red shadow-lg"
+                    className="w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-5 bg-transparent border border-border2 text-sub font-mono text-[13px] sm:text-[15px] font-black tracking-[0.4em] uppercase rounded-sm transition-all hover:border-red hover:text-red shadow-lg"
                     onClick={() => actSignal(active.id, 'SKIPPED')}
                   >
                     Discard

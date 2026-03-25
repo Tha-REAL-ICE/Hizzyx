@@ -128,36 +128,36 @@ export default function Dashboard({ trades, onUpdate }: { trades: Trade[], onUpd
   return (
     <div className="flex flex-col gap-8">
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-black border-2 border-border2 p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:border-red transition-colors">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="bg-black border-2 border-border2 p-4 sm:p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:border-red transition-colors">
           <div className="absolute top-0 left-0 w-full h-1 bg-red/50 group-hover:bg-red transition-colors"></div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-red mb-3 font-bold flex items-center gap-2">
-            <Crosshair size={12} /> Total Ops
+          <div className="font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.3em] text-red mb-2 sm:mb-3 font-bold flex items-center gap-2">
+            <Crosshair size={10} className="sm:w-3 sm:h-3" /> Total Ops
           </div>
-          <div className="font-display text-[54px] font-black text-white leading-none tracking-tighter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">{stats.total}</div>
+          <div className="font-display text-[32px] sm:text-[54px] font-black text-white leading-none tracking-tighter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">{stats.total}</div>
         </div>
-        <div className="bg-black border-2 border-border2 p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:border-lime transition-colors">
+        <div className="bg-black border-2 border-border2 p-4 sm:p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:border-lime transition-colors">
           <div className="absolute top-0 left-0 w-full h-1 bg-lime/50 group-hover:bg-lime transition-colors"></div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-lime mb-3 font-bold flex items-center gap-2">
-            <Zap size={12} /> Win Rate
+          <div className="font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.3em] text-lime mb-2 sm:mb-3 font-bold flex items-center gap-2">
+            <Zap size={10} className="sm:w-3 sm:h-3" /> Win Rate
           </div>
-          <div className="font-display text-[54px] font-black text-lime leading-none tracking-tighter drop-shadow-[0_0_15px_rgba(200,255,0,0.3)]">{stats.wr}%</div>
+          <div className="font-display text-[32px] sm:text-[54px] font-black text-lime leading-none tracking-tighter drop-shadow-[0_0_15px_rgba(200,255,0,0.3)]">{stats.wr}%</div>
         </div>
-        <div className="bg-black border-2 border-border2 p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:border-gold transition-colors">
+        <div className="bg-black border-2 border-border2 p-4 sm:p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:border-gold transition-colors">
           <div className="absolute top-0 left-0 w-full h-1 bg-gold/50 group-hover:bg-gold transition-colors"></div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-gold mb-3 font-bold">Streak</div>
+          <div className="font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.3em] text-gold mb-2 sm:mb-3 font-bold">Streak</div>
           <div className={cn(
-            "font-display text-[54px] font-black leading-none tracking-tighter",
+            "font-display text-[32px] sm:text-[54px] font-black leading-none tracking-tighter",
             stats.streakType === 'WIN' ? 'text-lime drop-shadow-[0_0_15px_rgba(200,255,0,0.3)]' : stats.streakType === 'LOSS' ? 'text-red drop-shadow-[0_0_15px_rgba(255,0,0,0.3)]' : 'text-white'
           )}>
-            {stats.streak}<span className="text-[20px] ml-1 font-mono">{stats.streakType === 'WIN' ? 'W' : stats.streakType === 'LOSS' ? 'L' : ''}</span>
+            {stats.streak}<span className="text-[14px] sm:text-[20px] ml-1 font-mono">{stats.streakType === 'WIN' ? 'W' : stats.streakType === 'LOSS' ? 'L' : ''}</span>
           </div>
         </div>
-        <div className="bg-black border-2 border-border2 p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:border-blue transition-colors">
+        <div className="bg-black border-2 border-border2 p-4 sm:p-6 relative overflow-hidden group shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:border-blue transition-colors">
           <div className="absolute top-0 left-0 w-full h-1 bg-blue/50 group-hover:bg-blue transition-colors"></div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-blue mb-3 font-bold">Freq (7D)</div>
-          <div className="font-display text-[54px] font-black text-blue leading-none tracking-tighter drop-shadow-[0_0_15px_rgba(56,189,248,0.3)]">
-            {stats.frequency} <span className="text-[14px] font-mono text-muted uppercase tracking-widest align-middle">T/D</span>
+          <div className="font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.3em] text-blue mb-2 sm:mb-3 font-bold">Freq (7D)</div>
+          <div className="font-display text-[32px] sm:text-[54px] font-black text-blue leading-none tracking-tighter drop-shadow-[0_0_15px_rgba(56,189,248,0.3)]">
+            {stats.frequency} <span className="text-[10px] sm:text-[14px] font-mono text-muted uppercase tracking-widest align-middle">T/D</span>
           </div>
         </div>
       </div>
