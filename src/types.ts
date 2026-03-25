@@ -97,6 +97,7 @@ export interface LiquidityLevel {
 
 export interface EngineSignal {
   id: string;
+  symbol: TradingPair;
   time: number;
   type: 'BUY' | 'SELL';
   entry: number;

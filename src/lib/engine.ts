@@ -220,6 +220,8 @@ export class TradingEngine {
           if (this.states[symbol]) {
             this.states[symbol].mtf.price = candle.close;
           }
+          // Run analysis on every tick for responsiveness
+          this.runAnalysis(symbol);
         } else {
           if (!this.data[symbol][mtf]) this.data[symbol][mtf] = [];
           this.data[symbol][mtf].push(candle);
@@ -416,6 +418,7 @@ export class TradingEngine {
       const test_hasConfirmation = true;
 
       if (test_isInside || test_htfMatch || test_hasFVG || test_hasSweep || test_hasConfirmation) {
+        console.log(`[ENGINE] Signal criteria met for ${symbol} at ${this.currentPrices[symbol]}`);
         this.generateSignal(symbol, zone);
       }
     }
@@ -442,6 +445,7 @@ export class TradingEngine {
 
     const signal: EngineSignal = {
       id,
+      symbol,
       time: Date.now(),
       type,
       entry,
@@ -606,7 +610,10 @@ export class TradingEngine {
     this.eqLvls[symbol] = this.eqLvls[symbol].slice(-15);
   }
 
-  public dispose() { Object.values(this.wsConnections).forEach(ws => ws.close()); }
+  public dispose() { 
+    Object.values(this.wsConnections).forEach(ws => ws.close()); 
+    this.listeners = {};
+  }
   public getCandlesticks(symbol: TradingPair) { return this.data[symbol][this.getTimeframes().mtf] || []; }
   public getZones(symbol: TradingPair) { return this.zones[symbol] || []; }
   public getFVGaps(symbol: TradingPair) { return this.fvgaps[symbol] || []; }

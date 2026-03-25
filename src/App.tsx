@@ -11,6 +11,7 @@ import TradeRow from './components/TradeRow';
 import { Menu, X, Radio, Search, Zap, Clock, Globe, ArrowUpRight, ArrowDownRight, BrainCircuit, AlertTriangle } from 'lucide-react';
 import { cn } from './lib/utils';
 import { ai, SYSTEM_INSTRUCTION, analyzeTrade, auditSignal } from './lib/gemini';
+import { Toaster, toast } from 'sonner';
 import { TradingEngine } from './lib/engine';
 import { TradeMode, TradingPair, MarketState, Trend } from './types';
 
@@ -21,6 +22,7 @@ export default function App() {
   const [activePage, setActivePage] = useState<PageId>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const processedSignals = useRef(new Set<string>());
   
   const [trades, setTrades] = useState<Trade[]>([]);
   const [rules, setRules] = useState<CustomRule[]>([]);
@@ -63,8 +65,10 @@ export default function App() {
 
       // Event Listeners
       const handleNewSignal = async (latest: any) => {
-        const symbolMatch = latest.id.match(/sig-([^-]+)-/);
-        const symbol = symbolMatch ? symbolMatch[1] : 'BTCUSD';
+        if (processedSignals.current.has(latest.id)) return;
+        processedSignals.current.add(latest.id);
+
+        const symbol = latest.symbol || 'BTCUSD';
 
         const newSignal = {
           user_id: user.id,
@@ -73,19 +77,17 @@ export default function App() {
           session: engineRef.current?.getState().session || 'LIVE',
           entry_price: latest.entry.toString(),
           stop_loss: latest.sl.toString(),
-          take_profit: latest.tp.toString(),
+          take_profit: latest.take_profit?.toString() || latest.tp.toString(),
           reasoning: latest.reason,
           source: `Blueprint-${latest.id}`,
           status: 'active',
           mode: engineMode
         };
 
-        const { data, error } = await supabase.from('signals').insert(newSignal).select().single();
-        if (!error && data) {
-          setSignals(prev => {
-            if (prev.some(s => s.id === data.id)) return prev;
-            return [data as Signal, ...prev];
-          });
+        const { error } = await supabase.from('signals').insert(newSignal);
+        if (error) {
+          console.error('Error inserting signal:', error);
+          processedSignals.current.delete(latest.id); // Allow retry if insert failed
         }
       };
 
@@ -186,6 +188,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-bg text-text font-sans selection:bg-red/30">
       <div className="grain"></div>
+      <Toaster position="top-right" theme="dark" expand={true} richColors />
       {!jarvisDone && <JarvisOverlay onComplete={handleJarvisComplete} />}
 
       <div className={cn("flex flex-col h-screen overflow-hidden", !jarvisDone && "invisible")}>
@@ -297,6 +300,24 @@ export default function App() {
             )}>
               {activePage === 'dashboard' && <Dashboard trades={trades} onUpdate={fetchData} />}
               {activePage === 'log' && <LogTrade onTradeLogged={fetchData} />}
+              {activePage === 'signals' && (
+                <SignalsPage 
+                  signals={signals} 
+                  onSignalUpdate={fetchData} 
+                  rules={rules} 
+                  engineState={engineState} 
+                  allEngineStates={allEngineStates}
+                  engineRef={engineRef} 
+                  isSyncing={isSyncing}
+                  onReSync={async () => {
+                    setIsSyncing(true);
+                    await engineRef.current?.reSync();
+                    setIsSyncing(false);
+                  }}
+                  sessionInfo={sessionInfo}
+                  engineMode={engineMode}
+                />
+              )}
               {activePage === 'analyst' && <MarketAnalyst engineStates={allEngineStates} />}
               {activePage === 'history' && (
                 <div className="flex flex-col gap-6">
@@ -311,23 +332,6 @@ export default function App() {
                     {!trades.length && <div className="text-center py-12 font-mono text-[10px] text-muted">No trades logged yet.</div>}
                   </div>
                 </div>
-              )}
-              {activePage === 'signals' && (
-                <SignalsPage 
-                  signals={signals} 
-                  onSignalUpdate={fetchData} 
-                  rules={rules} 
-                  engineState={engineState} 
-                  engineRef={engineRef} 
-                  isSyncing={isSyncing}
-                  onReSync={async () => {
-                    setIsSyncing(true);
-                    await engineRef.current?.reSync();
-                    setIsSyncing(false);
-                  }}
-                  sessionInfo={sessionInfo}
-                  engineMode={engineMode}
-                />
               )}
               {activePage === 'analytics' && <AnalyticsPage trades={trades} />}
               {activePage === 'rules' && (
@@ -356,7 +360,7 @@ function Sparkline({ data, colorClass }: { data: number[], colorClass: string })
   );
 }
 
-function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef, isSyncing, onReSync, sessionInfo, engineMode }: any) {
+function SignalsPage({ signals, onSignalUpdate, rules, engineState, allEngineStates, engineRef, isSyncing, onReSync, sessionInfo, engineMode }: any) {
   const prevEngineStateRef = useRef<MarketState | null>(null);
   useEffect(() => {
     prevEngineStateRef.current = engineState;
@@ -429,19 +433,56 @@ function SignalsPage({ signals, onSignalUpdate, rules, engineState, engineRef, i
   };
 
   useEffect(() => {
-    if (!active || !engineRef.current) {
+    if (!active || !allEngineStates) {
       setLivePrice(null);
       return;
     }
     
-    // Use the actual live price for the specific pair
-    const pairState = engineRef.current.getState(active.pair);
+    const pairState = allEngineStates[active.pair];
     if (pairState) {
       setLivePrice(pairState.mtf.price);
     }
-  }, [active, engineState]);
+  }, [active, allEngineStates]);
 
-  // Alert System
+  // Automatic Signal Level Notifications
+  const notifiedLevels = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!livePrice || !active) return;
+
+    const entry = parseFloat(active.entry_price);
+    const sl = parseFloat(active.stop_loss);
+    const tp = parseFloat(active.take_profit);
+
+    const checkLevel = (level: number, label: string, type: string) => {
+      const key = `${active.id}-${type}`;
+      if (notifiedLevels.current.has(key)) return;
+
+      // Threshold for "reaching" a level (0.05% proximity)
+      const threshold = level * 0.0005;
+      if (Math.abs(livePrice - level) <= threshold) {
+        toast.info(`${active.pair} ${label} Reached`, {
+          description: `Price hit ${label.toLowerCase()} level at ${level.toFixed(active.pair.includes('JPY') ? 3 : 2)}`,
+          duration: 5000,
+        });
+        
+        // Play sound if possible (optional, but requested "audible")
+        try {
+          const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+          audio.volume = 0.3;
+          audio.play().catch(() => {}); // Ignore autoplay blocks
+        } catch (e) {}
+
+        notifiedLevels.current.add(key);
+      }
+    };
+
+    if (entry) checkLevel(entry, 'Entry', 'entry');
+    if (sl) checkLevel(sl, 'Stop Loss', 'sl');
+    if (tp) checkLevel(tp, 'Take Profit', 'tp');
+  }, [livePrice, active]);
+
+  // Alert System (Manual)
   useEffect(() => {
     if (!livePrice || !active || alerts.length === 0) return;
 
